@@ -7,13 +7,14 @@ ZientisLauncherUI
 
 import os
 from PySide6.QtWidgets import (
-    QMainWindow, QFileDialog, QMessageBox, QListWidgetItem, QInputDialog, QShortcut, QMenu, QAction
+    QMainWindow, QFileDialog, QMessageBox, QListWidgetItem, QInputDialog, QMenu, QLabel
 )
+from PySide6.QtGui import QShortcut, QAction, QColor, QTextCharFormat, QIcon, QPixmap
 from PySide6.QtUiTools import QUiLoader
 from PySide6.QtCore import QFile, Qt, QTimer, QDateTime
-from PySide6.QtGui import QColor, QTextCharFormat, QIcon, QPixmap
 
 from controller.server_controller import ServerController
+
 
 class ZientisLauncherUI(QMainWindow):
     """Zientis GUI主視窗，僅負責UI與事件"""
@@ -101,6 +102,14 @@ class ZientisLauncherUI(QMainWindow):
         self.status_timer.timeout.connect(self.controller.on_update_status)
         self.status_timer.start(1000)
 
+        # --- StatusBar動態欄 ---
+        self.label_time = QLabel("系統時間：")
+        self.label_cpu = QLabel("CPU：")
+        self.label_ram = QLabel("RAM：")
+        self.statusBar().addPermanentWidget(self.label_time)
+        self.statusBar().addPermanentWidget(self.label_cpu)
+        self.statusBar().addPermanentWidget(self.label_ram)        
+        
     def setup_shortcuts(self):
         """設定快捷鍵"""
         QShortcut(Qt.CTRL | Qt.Key_H, self)
