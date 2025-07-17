@@ -73,3 +73,6 @@ RCON 自動連線、密碼/端口自動讀取 server.properties
 模組分層：UI/Controller/Model/Utils
 
 熱插拔、玩家管理、備份等均獨立模組
+
+## Setup
+Install dependencies with `pip install -r requirements.txt`.

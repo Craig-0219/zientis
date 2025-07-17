@@ -287,7 +287,9 @@ class ServerController:
             self.ui.show_message("請選擇", "請先點選要重載的插件。")
             return
         plugin_name = jar.rsplit(".", 1)[0]
-        if not self.rcon_mgr or not hasattr(self.rcon_mgr, "has_plugman") or not self.rcon_mgr.has_plugman():
+        if (not self.rcon_mgr or
+                not hasattr(self.rcon_mgr, "check_plugman_available") or
+                not self.rcon_mgr.check_plugman_available()):
             self.ui.show_message("PlugMan未安裝", "未偵測到 PlugMan 外掛或外掛未正常運作。")
             return
         resp = self.rcon_mgr.reload_plugin(plugin_name)

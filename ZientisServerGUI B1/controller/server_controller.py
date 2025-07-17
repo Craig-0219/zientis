@@ -5,6 +5,9 @@ import platform
 import subprocess
 import threading
 
+from PySide6.QtCore import QDateTime
+from PySide6.QtWidgets import QFileDialog, QListWidgetItem
+
 from model.config import ConfigManager
 from model.plugin_manager import PluginManager
 from model.backup_manager import BackupManager
@@ -179,7 +182,7 @@ class ServerController:
 
     def on_plugin_add(self):
         """手動選擇並安裝插件 JAR"""
-        jar_path, _ = self.ui.ui.QFileDialog.getOpenFileName(self.ui, "選擇插件 Jar 檔", "", "Jar files (*.jar)")
+        jar_path, _ = QFileDialog.getOpenFileName(self.ui, "選擇插件 Jar 檔", "", "Jar files (*.jar)")
         if not jar_path:
             return
         try:
@@ -240,30 +243,30 @@ class ServerController:
     # ============= 其他UI聯動 =============
 
     def on_select_core_path(self):
-        fname, _ = self.ui.ui.QFileDialog.getOpenFileName(self.ui, "選擇伺服器核心檔 (.jar)", "", "JAR files (*.jar);;All Files (*)")
+        fname, _ = QFileDialog.getOpenFileName(self.ui, "選擇伺服器核心檔 (.jar)", "", "JAR files (*.jar);;All Files (*)")
         if fname:
             self.ui.ui.edit_core_path.setText(fname)
 
     def on_select_java_path(self):
-        fname, _ = self.ui.ui.QFileDialog.getOpenFileName(self.ui, "選擇 Java 執行檔", "", "Java (*java*);;All Files (*)")
+        fname, _ = QFileDialog.getOpenFileName(self.ui, "選擇 Java 執行檔", "", "Java (*java*);;All Files (*)")
         if fname:
             self.ui.ui.edit_java_path.setText(fname)
 
     def on_select_server_folder(self):
-        folder = self.ui.ui.QFileDialog.getExistingDirectory(self.ui, "選擇伺服器資料夾")
+        folder = QFileDialog.getExistingDirectory(self.ui, "選擇伺服器資料夾")
         if folder:
             self.ui.ui.edit_folder_path.setText(folder)
             self._update_managers()
             self.reload_plugins_list()
 
     def on_select_world_folder(self):
-        folder = self.ui.ui.QFileDialog.getExistingDirectory(self.ui, "選擇世界資料夾")
+        folder = QFileDialog.getExistingDirectory(self.ui, "選擇世界資料夾")
         if folder:
             self.ui.ui.edit_world_path.setText(folder)
             self._update_managers()
 
     def on_select_backup_dir(self):
-        folder = self.ui.ui.QFileDialog.getExistingDirectory(self.ui, "選擇備份儲存目錄")
+        folder = QFileDialog.getExistingDirectory(self.ui, "選擇備份儲存目錄")
         if folder:
             self.ui.ui.edit_backup_dir.setText(folder)
             self._update_managers()
@@ -308,7 +311,7 @@ class ServerController:
 
     def on_update_status(self):
         """定時更新系統狀態（可呼叫於timer）"""
-        now = self.ui.ui.QDateTime.currentDateTime()
+        now = QDateTime.currentDateTime()
         self.ui.ui.label_time.setText("系統時間：" + now.toString("yyyy/MM/dd HH:mm:ss"))
         # 其他系統資訊也可加在這裡
 
