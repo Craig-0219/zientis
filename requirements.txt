@@ -1,0 +1,6 @@
+PySide6
+psutil
+requests
+cryptography
+mcrcon
+plyer
