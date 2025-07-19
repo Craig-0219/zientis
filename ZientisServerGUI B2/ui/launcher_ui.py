@@ -1,20 +1,12 @@
-# ui/launcher_ui.py
-"""
-ZientisLauncherUI
-負責：UI初始化、事件繫結、UI狀態顯示、錯誤提示、樣式設置
-不負責：任何伺服器啟動、設定檔存取、插件安裝備份、伺服器狀態查詢等業務邏輯
-"""
-
 import os
 from PySide6.QtWidgets import (
-    QMainWindow, QFileDialog, QMessageBox, QListWidgetItem, QInputDialog, QMenu, QLabel
+    QMainWindow, QFileDialog, QMessageBox, QListWidgetItem, QInputDialog, QMenu, QLabel, QPushButton, QTableWidget, QWidget
 )
 from PySide6.QtGui import QShortcut, QAction, QColor, QTextCharFormat, QIcon, QPixmap
 from PySide6.QtUiTools import QUiLoader
 from PySide6.QtCore import QFile, Qt, QTimer, QDateTime
 
 from controller.server_controller import ServerController
-
 
 class ZientisLauncherUI(QMainWindow):
     """Zientis GUI主視窗，僅負責UI與事件"""
@@ -106,10 +98,12 @@ class ZientisLauncherUI(QMainWindow):
         self.label_time = QLabel("系統時間：")
         self.label_cpu = QLabel("CPU：")
         self.label_ram = QLabel("RAM：")
+        self.label_rcon = QLabel("RCON：未連線")
         self.statusBar().addPermanentWidget(self.label_time)
         self.statusBar().addPermanentWidget(self.label_cpu)
-        self.statusBar().addPermanentWidget(self.label_ram)        
-        
+        self.statusBar().addPermanentWidget(self.label_ram)
+        self.statusBar().addPermanentWidget(self.label_rcon)
+
     def setup_shortcuts(self):
         """設定快捷鍵"""
         QShortcut(Qt.CTRL | Qt.Key_H, self)
@@ -275,7 +269,36 @@ class ZientisLauncherUI(QMainWindow):
                 btn.setToolTip("PlugMan 未安裝或失效！")
                 btn.setStyleSheet("background: #555; color: #ccc;")
 
-    # ============ 重要事件處理 =============
+    # ========== RCON狀態、動態啟用/禁用功能 ==========
+    def enable_player_features(self):
+        # 玩家區塊操作功能全部啟用（可根據你UI細節再補充）
+        self.ui.list_players.setEnabled(True)
+
+    def disable_player_features(self):
+        # 玩家區塊操作功能全部禁用
+        self.ui.list_players.setEnabled(False)
+
+    def enable_plugin_features(self):
+        # 插件相關按鈕全部啟用
+        for key in [
+            "btn_plugin_add", "btn_plugin_remove", "btn_plugin_reload",
+            "btn_plugin_enable", "btn_plugin_disable", "btn_plugin_check_updates"
+        ]:
+            btn = getattr(self.ui, key, None)
+            if btn:
+                btn.setEnabled(True)
+
+    def disable_plugin_features(self):
+        # 插件相關按鈕全部禁用
+        for key in [
+            "btn_plugin_add", "btn_plugin_remove", "btn_plugin_reload",
+            "btn_plugin_enable", "btn_plugin_disable", "btn_plugin_check_updates"
+        ]:
+            btn = getattr(self.ui, key, None)
+            if btn:
+                btn.setEnabled(False)
+
+    # ============ 重要事件處理 ============
     def closeEvent(self, event):
         """視窗關閉時，通知controller清理"""
         self.controller.on_exit()

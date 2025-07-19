@@ -2,7 +2,7 @@ import os
 import platform
 import subprocess
 import threading
-import psutil  # pip install psutil
+import psutil
 
 from model.config import ConfigManager
 from model.plugin_manager import PluginManager
@@ -13,14 +13,13 @@ from model.rcon_manager import RconManager
 from utils.logger import log_info, log_error
 from utils.notification import notify
 
-from PySide6.QtCore import QTimer, QThread, Signal, QDateTime
+from PySide6.QtCore import QTimer, QThread, Signal, QDateTime, QMetaObject, Qt
 from PySide6.QtWidgets import QFileDialog, QTableWidgetItem
 
 ROLE_PRIORITY = {"服主": 0, "管理員": 1, "VIP": 2, "玩家": 3}
 
 class PlayerSyncWorker(QThread):
-    player_data_ready = Signal(list)  # list[Player]
-
+    player_data_ready = Signal(list)
     def __init__(self, rcon_mgr, role_mgr):
         super().__init__()
         self.rcon_mgr = rcon_mgr
@@ -28,7 +27,11 @@ class PlayerSyncWorker(QThread):
 
     def run(self):
         try:
-            players = self.rcon_mgr.get_online_players()
+            players = []
+            try:
+                players = self.rcon_mgr.get_online_players()
+            except Exception as e:
+                print(f"[DEBUG] RCON get_online_players exception: {e}")
             self.role_mgr.sync_roles_from_server(players)
             player_objs = []
             for name in players:
@@ -37,17 +40,19 @@ class PlayerSyncWorker(QThread):
             player_objs.sort(key=lambda p: (ROLE_PRIORITY.get(p.role, 99), p.name.lower()))
             self.player_data_ready.emit(player_objs)
         except Exception as e:
+            print(f"[DEBUG] 玩家名單同步失敗: {e}")
             log_error(f"玩家名單同步失敗: {e}")
             self.player_data_ready.emit([])
 
 class ServerController:
     def __init__(self, ui):
-        self.ui = ui  # MainWindow
+        print("[DEBUG] ServerController init")
+        self.ui = ui
         self.config_mgr = ConfigManager()
         self.server_process = None
         self.server_running = False
         self.log_thread = None
-
+        self.rcon_ready = False
         self.config = self.config_mgr.load()
         self.plugin_mgr = None
         self.backup_mgr = None
@@ -56,18 +61,20 @@ class ServerController:
 
         self.player_timer = QTimer()
         self.player_timer.timeout.connect(self.update_player_list)
+        print("[DEBUG] 綁定 player_timer -> update_player_list")
         self.player_worker = None
 
-        # 狀態列定時器（只用主執行緒！）
         self.status_timer = QTimer(self.ui)
         self.status_timer.timeout.connect(self.on_update_status)
+        print("[DEBUG] 綁定 status_timer -> on_update_status")
         self.status_timer.start(1000)
 
         self._update_managers()
 
     def _update_managers(self):
+        print("[DEBUG] _update_managers called")
         folder = self.config.get("folder", "")
-        backup_dir = self.config.get("backup_dir", os.path.join(os.getcwd(), "backups"))
+        backup_dir = self.config.get("backup_dir", os.getcwd() + "/backups")
         world_path = self.config.get("world", "")
 
         self.plugin_mgr = PluginManager(os.path.join(folder, "plugins")) if folder else None
@@ -80,52 +87,72 @@ class ServerController:
         self.rcon_mgr = RconManager(rcon_host, rcon_port, rcon_pass)
 
     def on_load_last_config(self):
+        print("[DEBUG] on_load_last_config called")
         self.config = self.config_mgr.load()
         self._update_managers()
         if self.config:
             self.ui.restore_config_to_ui(self.config)
 
     def on_save_settings(self):
-        cfg = {
-            "core": self.ui.ui.combo_core.currentText(),
-            "core_path": self.ui.ui.edit_core_path.text(),
-            "folder": self.ui.ui.edit_folder_path.text(),
-            "java_path": self.ui.ui.edit_java_path.text(),
-            "xms": self.ui.ui.spin_xms.value(),
-            "xmx": self.ui.ui.spin_xmx.value(),
-            "args": self.ui.ui.edit_args.text(),
-            "port": self.ui.ui.spin_port.value(),
-            "max_players": self.ui.ui.spin_max_players.value(),
-            "world": self.ui.ui.edit_world_path.text(),
-            "motd": self.ui.ui.edit_motd.text(),
-            "backup": self.ui.ui.check_backup.isChecked(),
-            "backup_interval": self.ui.ui.spin_backup_interval.value(),
-            "backup_dir": self.ui.ui.edit_backup_dir.text(),
-            "language": self.ui.ui.combo_language.currentText(),
-            "setup_done": True,
-            "rcon_host": self.ui.ui.edit_rcon_host.text() if hasattr(self.ui.ui, "edit_rcon_host") else "127.0.0.1",
-            "rcon_port": self.ui.ui.spin_rcon_port.value() if hasattr(self.ui.ui, "spin_rcon_port") else 25575,
-            "rcon_pass": self.ui.ui.edit_rcon_pass.text() if hasattr(self.ui.ui, "edit_rcon_pass") else "",
-        }
-        self.config_mgr.save(cfg)
-        self.config = cfg
-        self._update_managers()
-        self.ui.show_message("設定已儲存", "伺服器設定已更新！")
+        try:
+            cfg = {
+                "core": self.ui.ui.combo_core.currentText(),
+                "core_path": self.ui.ui.edit_core_path.text(),
+                "folder": self.ui.ui.edit_folder_path.text(),
+                "java_path": self.ui.ui.edit_java_path.text(),
+                "xms": self.ui.ui.spin_xms.value(),
+                "xmx": self.ui.ui.spin_xmx.value(),
+                "args": self.ui.ui.edit_args.text(),
+                "port": self.ui.ui.spin_port.value(),
+                "max_players": self.ui.ui.spin_max_players.value(),
+                "world": self.ui.ui.edit_world_path.text(),
+                "motd": self.ui.ui.edit_motd.text(),
+                "backup": self.ui.ui.check_backup.isChecked(),
+                "backup_interval": self.ui.ui.spin_backup_interval.value(),
+                "backup_dir": self.ui.ui.edit_backup_dir.text(),
+                "language": self.ui.ui.combo_language.currentText(),
+                "setup_done": True,
+                "rcon_host": self.ui.ui.edit_rcon_host.text() if hasattr(self.ui.ui, "edit_rcon_host") else "127.0.0.1",
+                "rcon_port": self.ui.ui.spin_rcon_port.value() if hasattr(self.ui.ui, "spin_rcon_port") else 25575,
+                "rcon_pass": self.ui.ui.edit_rcon_pass.text() if hasattr(self.ui.ui, "edit_rcon_pass") else "",
+            }
+            self.config_mgr.save(cfg)
+            self.config = cfg
+            self._update_managers()
+            self.ui.show_message("設定已儲存", "伺服器設定已更新！")
+        except Exception as e:
+            print(f"[DEBUG] on_save_settings exception: {e}")
+            self.ui.show_message("錯誤", str(e), "error")
 
-    # ================= 伺服器啟動/停止 =================
-    def on_start_server(self):
-        if self.server_running:
-            self.ui.append_log("伺服器已在運行中。")
-            return
+    def on_validate_server_config(self):
+        print("[DEBUG] on_validate_server_config called")
+        java_path = self.ui.ui.edit_java_path.text()
+        jar_path = self.ui.ui.edit_core_path.text()
+        folder = self.ui.ui.edit_folder_path.text()
+        if not (os.path.exists(folder) and os.path.isfile(jar_path) and os.path.isfile(java_path)):
+            self.ui.show_message("錯誤", "請檢查 Java、核心與資料夾設定！", "error")
+            return False
+        return True
+
+    def server_locked(self):
+        print("[DEBUG] server_locked called")
+        world_path = self.ui.ui.edit_world_path.text()
+        if not world_path: return False
+        testfile = os.path.join(world_path, "level.dat")
+        try:
+            with open(testfile, 'ab'):
+                return False
+        except Exception:
+            return True
+
+    def _start_server_process(self):
+        print("[DEBUG] _start_server_process called")
         java_path = self.ui.ui.edit_java_path.text()
         jar_path = self.ui.ui.edit_core_path.text()
         xms = self.ui.ui.spin_xms.value()
         xmx = self.ui.ui.spin_xmx.value()
         args = self.ui.ui.edit_args.text()
         folder = self.ui.ui.edit_folder_path.text()
-        if not (os.path.exists(folder) and os.path.isfile(jar_path) and os.path.isfile(java_path)):
-            self.ui.show_message("錯誤", "請檢查 Java、核心與資料夾設定！", "error")
-            return
 
         cmd = [
             java_path,
@@ -144,78 +171,187 @@ class ServerController:
                 stderr=subprocess.STDOUT,
                 text=True,
                 bufsize=1,
-                shell=(platform.system() != "Windows")
+                shell=(platform.system() == "Windows")
             )
             self.server_running = True
+            self.rcon_ready = False
             self.ui.append_log("伺服器已啟動")
             log_info(f"伺服器啟動成功: {cmd}")
             self.log_thread = threading.Thread(target=self._read_server_output, daemon=True)
             self.log_thread.start()
-            self.player_timer.start(3000)
-            self.server_running = True
-            threading.Timer(3.0, self.update_plugman_status).start()
         except Exception as e:
-            log_error(f"伺服器啟動失敗: {e}")
-            notify("伺服器啟動失敗", str(e))
-            self.ui.show_message("錯誤", f"伺服器啟動失敗：{e}", "error")
+            print(f"[DEBUG] _start_server_process exception: {e}")
+            self._handle_start_error(e)
+
+    def _handle_start_error(self, e):
+        log_error(f"伺服器啟動失敗: {e}")
+        notify("伺服器啟動失敗", str(e))
+        self.ui.show_message("錯誤", f"伺服器啟動失敗：{e}", "error")
+
+    def on_start_server(self):
+        print("[DEBUG] on_start_server called")
+        if self.server_running:
+            self.ui.append_log("伺服器已在運行中。")
+            return
+        if not self.on_validate_server_config():
+            return
+        if self.server_locked():
+            self.ui.show_message("錯誤", "檔案被鎖定，請確定沒有其他伺服器執行中，或重開機。", "error")
+            return
+        try:
+            self._start_server_process()
+        except Exception as e:
+            self._handle_start_error(e)
 
     def _read_server_output(self):
+        print("[DEBUG] _read_server_output thread started")
+        rcon_keywords = [
+            "Thread RCON Listener started",
+            "RCON running",
+            "RCON is running",
+            "RCON listener started",
+            "RCON 啟動"
+        ]
+        rcon_detected = False
         try:
-            while self.server_process.poll() is None:
-                line = self.server_process.stdout.readline()
+            if not self.server_process or not self.server_process.stdout:
+                return
+            for line in self.server_process.stdout:
                 if line:
-                    self.ui.append_log(line.strip(), is_error=("ERROR" in line.upper() or "SEVERE" in line.upper()))
+                    self.ui.append_log(line.strip(), is_error=("WARN" in line.upper() or "SEVERE" in line.upper()))
+                    if not rcon_detected and any(key in line for key in rcon_keywords):
+                        print("[DEBUG] Detected RCON keyword in output")
+                        rcon_detected = True
+                        QTimer.singleShot(1500, self._wait_rcon_ready_and_init)  # 延遲觸發
         except Exception as e:
+            print(f"[DEBUG] _read_server_output exception: {e}")
             log_error(f"讀取伺服器日誌失敗: {e}")
+        finally:
+            try:
+                if self.server_process and self.server_process.stdout:
+                    self.server_process.stdout.close()
+            except Exception as e:
+                print(f"[DEBUG] close stdout exception: {e}")
+
+    def _wait_rcon_ready_and_init(self, max_wait=10):
+        print("[DEBUG] _wait_rcon_ready_and_init called")
+        self.rcon_ready = False
+        self.rcon_retry_count = 0
+
+        def try_connect_rcon():
+            try:
+                print(f"[DEBUG] try_connect_rcon attempt={self.rcon_retry_count}")
+                if self.rcon_mgr:
+                    self.rcon_mgr.reset_plugman_cache()
+                    if not self.rcon_mgr.password:
+                        QMetaObject.invokeMethod(
+                            self.ui,
+                            lambda: self.ui.append_log("請在設定中填寫 RCON 密碼！", is_error=True),
+                            Qt.QueuedConnection
+                        )
+                        return
+                    result = ""
+                    try:
+                        result = self.rcon_mgr.run_command("list")
+                        if "[RCON ERROR" in result:
+                            print(f"[DEBUG] RCON error response: {result}")
+                            result = ""
+                    except Exception as e:
+                        print(f"[DEBUG] RCON run_command failed: {e}")
+                    if result:
+                        self.rcon_ready = True
+                        print("[DEBUG] RCON 連線成功！")
+                        QMetaObject.invokeMethod(
+                            self.ui,
+                            lambda: self._rcon_ready_after_check(),
+                            Qt.QueuedConnection
+                        )
+                        return
+            except Exception as e:
+                print(f"[DEBUG] try_connect_rcon fail: {e}")
+                if self.rcon_retry_count == 0:
+                    QMetaObject.invokeMethod(
+                        self.ui,
+                        lambda: self.ui.append_log(f"RCON 連線失敗：{e}", is_error=True),
+                        Qt.QueuedConnection
+                    )
+            self.rcon_retry_count += 1
+            if self.rcon_retry_count > max_wait * 2:
+                print("[DEBUG] RCON 初始化超時")
+                QMetaObject.invokeMethod(
+                    self.ui,
+                    lambda: self.ui.append_log("RCON 初始化超時，無法啟用 RCON 相關功能", is_error=True),
+                    Qt.QueuedConnection
+                )
+                return
+            QTimer.singleShot(500, try_connect_rcon)
+
+        try_connect_rcon()
+
+    def _rcon_ready_after_check(self):
+        self.ui.append_log("RCON 已啟動，可執行 RCON 功能。")
+        self.update_plugman_status()
+        self.player_timer.start(3000)
 
     def on_stop_server(self):
+        print("[DEBUG] on_stop_server called")
         if self.server_process and self.server_process.poll() is None:
             try:
                 self.server_process.stdin.write("stop\n")
                 self.server_process.stdin.flush()
                 self.server_process.wait(timeout=10)
                 self.ui.append_log("伺服器已停止")
-                log_info("伺服器已停止")
-            except Exception as e:
-                log_error(f"伺服器停止失敗: {e}")
-                notify("伺服器停止失敗", str(e))
-                self.ui.append_log(f"停止失敗：{e}", is_error=True)
+            except subprocess.TimeoutExpired:
+                self.ui.append_log("伺服器強制終止...", is_error=True)
                 self.server_process.terminate()
+                try:
+                    self.server_process.wait(timeout=3)
+                except subprocess.TimeoutExpired:
+                    self.server_process.kill()
+            except Exception as e:
+                print(f"[DEBUG] on_stop_server exception: {e}")
+                log_error(f"伺服器停止失敗: {e}")
+                self.ui.append_log(f"停止失敗：{e}", is_error=True)
             finally:
                 self.server_running = False
+                self.rcon_ready = False
                 self.server_process = None
                 self.log_thread = None
                 self.player_timer.stop()
         else:
             self.ui.append_log("伺服器未啟動。")
+            self.rcon_ready = False
 
     def on_restart_server(self):
-        """重啟伺服器（用單執行緒安全的 QTimer 方式）"""
-        # 先停止
+        print("[DEBUG] on_restart_server called")
         self.on_stop_server()
-        # 2 秒後檢查設定再啟動（避免直接 crash）
-        def try_start():
-            # 跟 on_start_server 同步，檢查資料夾與檔案是否存在
-            java_path = self.ui.ui.edit_java_path.text()
-            jar_path = self.ui.ui.edit_core_path.text()
-            folder = self.ui.ui.edit_folder_path.text()
-            if not (os.path.exists(folder) and os.path.isfile(jar_path) and os.path.isfile(java_path)):
-                self.ui.show_message("錯誤", "請檢查 Java、核心與資料夾設定！", "error")
-                return
-            self.on_start_server()
-        QTimer.singleShot(2000, try_start)
+        QTimer.singleShot(2000, self.on_start_server)
 
-    # =============== 玩家名單/權限管理 ===============
+    # 玩家名單同步 & UI 動態啟用
     def update_player_list(self):
+        if not self.rcon_ready:
+            print("[DEBUG] RCON 未連線，禁用玩家名單功能")
+            self.ui.show_player_list([])
+            self.ui.disable_player_features()
+            return
+        if self.player_worker and self.player_worker.isRunning():
+            self.player_worker.quit()
+            self.player_worker.wait()
         if not self.rcon_mgr or not self.role_mgr:
             self.ui.show_player_list([])
+            self.ui.disable_player_features()
             return
         self.player_worker = PlayerSyncWorker(self.rcon_mgr, self.role_mgr)
         self.player_worker.player_data_ready.connect(self.ui.show_player_list)
         self.player_worker.start()
+        self.ui.enable_player_features()
 
-    # =============== 插件管理（QTableWidget） ===============
+    # 插件管理（列表）
     def reload_plugins_list(self):
+        if not self.rcon_ready:
+            print("[DEBUG] RCON 未連線，插件管理不可用")
+            self.ui.set_plugman_status(False)
+            return
         table = self.ui.ui.table_plugins
         table.setRowCount(0)
         if not self.plugin_mgr:
@@ -259,6 +395,9 @@ class ServerController:
         return jar
 
     def on_plugin_add(self):
+        if not self.rcon_ready:
+            self.ui.show_message("RCON未連線", "請等伺服器完全啟動後再安裝插件", "warn")
+            return
         jar_path, _ = QFileDialog.getOpenFileName(self.ui, "選擇插件 Jar 檔", "", "Jar files (*.jar)")
         if not jar_path:
             return
@@ -270,6 +409,9 @@ class ServerController:
             self.ui.show_message("安裝失敗", str(e), "error")
 
     def on_plugin_remove(self):
+        if not self.rcon_ready:
+            self.ui.show_message("RCON未連線", "請等伺服器完全啟動後再移除插件", "warn")
+            return
         jar = self._get_selected_plugin_jar()
         if not jar:
             self.ui.show_message("請選擇", "請先點選要移除的插件。")
@@ -282,6 +424,9 @@ class ServerController:
             self.ui.show_message("移除失敗", str(e), "error")
 
     def on_plugin_reload(self):
+        if not self.rcon_ready:
+            self.ui.show_message("RCON未連線", "請等伺服器完全啟動後再重載插件", "warn")
+            return
         jar = self._get_selected_plugin_jar()
         if not jar:
             self.ui.show_message("請選擇", "請先點選要重載的插件。")
@@ -297,6 +442,9 @@ class ServerController:
             self.ui.show_message("熱重載失敗", f"伺服器回應：\n{resp}", "error")
 
     def on_plugin_enable(self):
+        if not self.rcon_ready:
+            self.ui.show_message("RCON未連線", "請等伺服器完全啟動後再啟用插件", "warn")
+            return
         jar = self._get_selected_plugin_jar()
         if not jar:
             self.ui.show_message("請選擇", "請先點選要啟用的插件。")
@@ -306,6 +454,9 @@ class ServerController:
         self.ui.show_message("啟用結果", resp)
 
     def on_plugin_disable(self):
+        if not self.rcon_ready:
+            self.ui.show_message("RCON未連線", "請等伺服器完全啟動後再停用插件", "warn")
+            return
         jar = self._get_selected_plugin_jar()
         if not jar:
             self.ui.show_message("請選擇", "請先點選要停用的插件。")
@@ -316,14 +467,13 @@ class ServerController:
 
     def update_plugman_status(self):
         available = False
-        if self.rcon_mgr and hasattr(self.rcon_mgr, "check_plugman_available"):
+        if self.rcon_ready and self.rcon_mgr and hasattr(self.rcon_mgr, "check_plugman_available"):
             available = self.rcon_mgr.check_plugman_available()
         self.ui.set_plugman_status(available)
 
     def on_check_plugin_updates(self):
         self.ui.show_message("尚未實作", "插件更新查詢功能暫未開放", "warn")
 
-    # =============== 備份管理 ===============
     def on_manual_backup(self):
         if not self.backup_mgr:
             self.ui.show_message("錯誤", "請先設定世界資料夾與備份路徑", "error")
@@ -337,7 +487,7 @@ class ServerController:
             notify("備份失敗", str(e))
             self.ui.show_message("備份失敗", str(e), "error")
 
-    # ============= 其他UI聯動 =============
+    # 檔案/資料夾選擇 UI
     def on_select_core_path(self):
         fname, _ = QFileDialog.getOpenFileName(self.ui, "選擇伺服器核心檔 (.jar)", "", "JAR files (*.jar);;All Files (*)")
         if fname:
@@ -367,26 +517,14 @@ class ServerController:
             self.ui.ui.edit_backup_dir.setText(folder)
             self._update_managers()
 
-    def on_tab_changed(self, idx):
-        pass
-
-    def on_change_language(self, idx):
-        pass
-
-    def on_update_backup_timer(self):
-        pass
-
-    def on_validate_core_path(self):
-        pass
-
-    def on_validate_java_path(self):
-        pass
-
-    def on_validate_port(self):
-        pass
-
-    def on_preview_launch_cmd(self):
-        pass
+    # 其餘事件 placeholder
+    def on_tab_changed(self, idx): pass
+    def on_change_language(self, idx): pass
+    def on_update_backup_timer(self): pass
+    def on_validate_core_path(self): pass
+    def on_validate_java_path(self): pass
+    def on_validate_port(self): pass
+    def on_preview_launch_cmd(self): pass
 
     def on_send_command(self):
         if not self.server_running or not self.server_process or self.server_process.poll() is not None:
@@ -403,17 +541,38 @@ class ServerController:
                 self.ui.append_log(f"指令發送失敗：{e}", is_error=True)
 
     def on_update_status(self):
-        from psutil import cpu_percent, virtual_memory
-        now = QDateTime.currentDateTime()
-        cpu = cpu_percent()
-        ram = virtual_memory().percent
-        # 用 self.ui.label_time 等更新
-        self.ui.label_time.setText(f"系統時間：{now.toString('yyyy/MM/dd HH:mm:ss')}")
-        self.ui.label_cpu.setText(f"CPU：{cpu}%")
-        self.ui.label_ram.setText(f"RAM：{ram}%")
+        try:
+            now = QDateTime.currentDateTime()
+            cpu = psutil.cpu_percent()
+            ram = psutil.virtual_memory().percent
+            if hasattr(self.ui, "label_time"):
+                self.ui.label_time.setText(f"系統時間：{now.toString('yyyy/MM/dd HH:mm:ss')}")
+            if hasattr(self.ui, "label_cpu"):
+                self.ui.label_cpu.setText(f"CPU：{cpu}%")
+            if hasattr(self.ui, "label_ram"):
+                self.ui.label_ram.setText(f"RAM：{ram}%")
+            if hasattr(self.ui, "label_rcon"):
+                self.ui.label_rcon.setText("RCON：連線中" if self.rcon_ready else "RCON：未連線")
+            if self.rcon_ready:
+                self.ui.enable_player_features()
+                self.ui.enable_plugin_features()
+            else:
+                self.ui.disable_player_features()
+                self.ui.disable_plugin_features()
+        except Exception as e:
+            print(f"[DEBUG] 狀態列更新失敗: {e}")
+            log_error(f"狀態列更新失敗: {e}")
 
     def on_exit(self):
-        if self.server_running:
-            self.on_stop_server()
-        self.player_timer.stop()
-        self.status_timer.stop()
+        try:
+            if self.server_running:
+                self.on_stop_server()
+            self.player_timer.stop()
+            self.status_timer.stop()
+            if self.player_worker and self.player_worker.isRunning():
+                self.player_worker.quit()
+                self.player_worker.wait()
+        except Exception as e:
+            print(f"[DEBUG] 程式結束清理異常: {e}")
+            log_error(f"程式結束清理異常: {e}")
+

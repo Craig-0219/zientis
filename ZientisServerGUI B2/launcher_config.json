@@ -1,0 +1,21 @@
+{
+  "core": "",
+  "core_path": "C:/Users/craig/OneDrive/桌面/zientis server/server.jar",
+  "folder": "C:/Users/craig/OneDrive/桌面/zientis server",
+  "java_path": "C:/Program Files/Java/jdk-21/bin/java.exe",
+  "xms": 1024,
+  "xmx": 4096,
+  "args": "",
+  "port": 25575,
+  "max_players": 10,
+  "world": "C:/Users/craig/OneDrive/桌面/zientis server/world",
+  "motd": "",
+  "backup": false,
+  "backup_interval": 0,
+  "backup_dir": "",
+  "language": "",
+  "setup_done": true,
+  "rcon_host": "127.0.0.1",
+  "rcon_port": 25575,
+  "rcon_pass": "776583"
+}
