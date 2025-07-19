@@ -1,0 +1,661 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>MainWindow</class>
+ <widget class="QMainWindow" name="MainWindow">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>1200</width>
+    <height>800</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Zientis Server Manager</string>
+  </property>
+  <widget class="QWidget" name="centralwidget">
+   <layout class="QVBoxLayout" name="verticalLayout_main">
+    <item>
+     <widget class="QTabWidget" name="tabWidget">
+      <property name="currentIndex">
+       <number>0</number>
+      </property>
+      <widget class="QWidget" name="tab_console">
+       <attribute name="title">
+        <string>Console</string>
+       </attribute>
+       <layout class="QVBoxLayout" name="vbox_console">
+        <item>
+         <widget class="QLabel" name="label_notify_console">
+          <property name="minimumSize">
+           <size>
+            <width>0</width>
+            <height>30</height>
+           </size>
+          </property>
+          <property name="maximumSize">
+           <size>
+            <width>16777215</width>
+            <height>100</height>
+           </size>
+          </property>
+          <property name="text">
+           <string>通知訊息</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QFrame" name="line_console">
+          <property name="frameShape">
+           <enum>QFrame::HLine</enum>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QSplitter" name="splitter_console">
+          <property name="orientation">
+           <enum>Qt::Horizontal</enum>
+          </property>
+          <widget class="QTextEdit" name="text_log"/>
+          <widget class="QWidget" name="panel_console_right">
+           <layout class="QVBoxLayout" name="vbox_console_right">
+            <item>
+             <widget class="QLineEdit" name="edit_command">
+              <property name="placeholderText">
+               <string>輸入指令…</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QPushButton" name="btn_send_command">
+              <property name="text">
+               <string>發送指令</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QPushButton" name="btn_start">
+              <property name="text">
+               <string>啟動伺服器</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QPushButton" name="btn_stop">
+              <property name="text">
+               <string>停止伺服器</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QPushButton" name="btn_restart">
+              <property name="text">
+               <string>重啟伺服器</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <spacer name="verticalSpacer1">
+              <property name="orientation">
+               <enum>Qt::Vertical</enum>
+              </property>
+              <property name="sizeHint" stdset="0">
+               <size>
+                <width>0</width>
+                <height>0</height>
+               </size>
+              </property>
+             </spacer>
+            </item>
+           </layout>
+          </widget>
+         </widget>
+        </item>
+        <item>
+         <widget class="QLabel" name="lbl_status_console">
+          <property name="maximumSize">
+           <size>
+            <width>16777215</width>
+            <height>100</height>
+           </size>
+          </property>
+          <property name="styleSheet">
+           <string>color:gray;</string>
+          </property>
+          <property name="text">
+           <string>狀態：等待操作…</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </widget>
+      <widget class="QWidget" name="tab_plugins">
+       <attribute name="title">
+        <string>Plugins</string>
+       </attribute>
+       <layout class="QVBoxLayout" name="vbox_plugins">
+        <item>
+         <widget class="QLabel" name="label_notify_plugins">
+          <property name="maximumSize">
+           <size>
+            <width>16777215</width>
+            <height>100</height>
+           </size>
+          </property>
+          <property name="text">
+           <string>通知訊息</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QFrame" name="line_plugins">
+          <property name="frameShape">
+           <enum>QFrame::HLine</enum>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QSplitter" name="splitter_plugins">
+          <property name="orientation">
+           <enum>Qt::Horizontal</enum>
+          </property>
+          <widget class="QTableWidget" name="table_plugins"/>
+          <widget class="QWidget" name="panel_plugins_right">
+           <layout class="QVBoxLayout" name="vbox_plugins_right">
+            <item>
+             <widget class="QPushButton" name="btn_plugin_add">
+              <property name="text">
+               <string>新增插件</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QPushButton" name="btn_plugin_remove">
+              <property name="text">
+               <string>移除插件</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QPushButton" name="btn_plugin_reload">
+              <property name="text">
+               <string>重新載入</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QPushButton" name="btn_plugin_check_updates">
+              <property name="text">
+               <string>檢查更新</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QPushButton" name="btn_plugin_enable">
+              <property name="text">
+               <string>啟用插件</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QPushButton" name="btn_plugin_disable">
+              <property name="text">
+               <string>停用插件</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <spacer name="verticalSpacer2">
+              <property name="orientation">
+               <enum>Qt::Vertical</enum>
+              </property>
+              <property name="sizeHint" stdset="0">
+               <size>
+                <width>0</width>
+                <height>0</height>
+               </size>
+              </property>
+             </spacer>
+            </item>
+           </layout>
+          </widget>
+         </widget>
+        </item>
+        <item>
+         <widget class="QLabel" name="lbl_status_plugins">
+          <property name="maximumSize">
+           <size>
+            <width>16777215</width>
+            <height>100</height>
+           </size>
+          </property>
+          <property name="styleSheet">
+           <string>color:gray;</string>
+          </property>
+          <property name="text">
+           <string>狀態：等待操作…</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </widget>
+      <widget class="QWidget" name="tab_players">
+       <attribute name="title">
+        <string>Players</string>
+       </attribute>
+       <layout class="QVBoxLayout" name="vbox_players">
+        <item>
+         <widget class="QLabel" name="label_notify_players">
+          <property name="maximumSize">
+           <size>
+            <width>16777215</width>
+            <height>100</height>
+           </size>
+          </property>
+          <property name="text">
+           <string>通知訊息</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QFrame" name="line_players">
+          <property name="frameShape">
+           <enum>QFrame::HLine</enum>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QSplitter" name="splitter_players">
+          <property name="orientation">
+           <enum>Qt::Horizontal</enum>
+          </property>
+          <widget class="QListWidget" name="list_players"/>
+          <widget class="QWidget" name="panel_players_right">
+           <layout class="QVBoxLayout" name="vbox_players_right">
+            <item>
+             <widget class="QLabel" name="label_player_tip">
+              <property name="text">
+               <string>雙擊或右鍵玩家進行管理</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <spacer name="verticalSpacer3">
+              <property name="orientation">
+               <enum>Qt::Vertical</enum>
+              </property>
+              <property name="sizeHint" stdset="0">
+               <size>
+                <width>0</width>
+                <height>0</height>
+               </size>
+              </property>
+             </spacer>
+            </item>
+           </layout>
+          </widget>
+         </widget>
+        </item>
+        <item>
+         <widget class="QLabel" name="lbl_status_players">
+          <property name="maximumSize">
+           <size>
+            <width>16777215</width>
+            <height>100</height>
+           </size>
+          </property>
+          <property name="styleSheet">
+           <string>color:gray;</string>
+          </property>
+          <property name="text">
+           <string>狀態：等待操作…</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </widget>
+      <widget class="QWidget" name="tab_backup">
+       <attribute name="title">
+        <string>Backup</string>
+       </attribute>
+       <layout class="QVBoxLayout" name="vbox_backup">
+        <item>
+         <widget class="QLabel" name="label_notify_backup">
+          <property name="maximumSize">
+           <size>
+            <width>16777215</width>
+            <height>100</height>
+           </size>
+          </property>
+          <property name="text">
+           <string>通知訊息</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QFrame" name="line_backup">
+          <property name="frameShape">
+           <enum>QFrame::HLine</enum>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QSplitter" name="splitter_backup">
+          <property name="orientation">
+           <enum>Qt::Horizontal</enum>
+          </property>
+          <widget class="QListWidget" name="list_backup"/>
+          <widget class="QWidget" name="panel_backup_right">
+           <layout class="QVBoxLayout" name="vbox_backup_right">
+            <item>
+             <widget class="QPushButton" name="btn_backup">
+              <property name="text">
+               <string>執行手動備份</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <spacer name="verticalSpacer4">
+              <property name="orientation">
+               <enum>Qt::Vertical</enum>
+              </property>
+              <property name="sizeHint" stdset="0">
+               <size>
+                <width>0</width>
+                <height>0</height>
+               </size>
+              </property>
+             </spacer>
+            </item>
+           </layout>
+          </widget>
+         </widget>
+        </item>
+        <item>
+         <widget class="QLabel" name="lbl_status_backup">
+          <property name="maximumSize">
+           <size>
+            <width>16777215</width>
+            <height>100</height>
+           </size>
+          </property>
+          <property name="styleSheet">
+           <string>color:gray;</string>
+          </property>
+          <property name="text">
+           <string>狀態：等待操作…</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </widget>
+      <widget class="QWidget" name="tab_settings">
+       <attribute name="title">
+        <string>Settings</string>
+       </attribute>
+       <layout class="QVBoxLayout" name="vbox_settings">
+        <item>
+         <widget class="QLabel" name="label_notify_settings">
+          <property name="text">
+           <string>通知訊息</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QFrame" name="line_settings">
+          <property name="frameShape">
+           <enum>QFrame::HLine</enum>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <layout class="QFormLayout" name="form_settings">
+          <item row="0" column="0">
+           <widget class="QLabel" name="label_core">
+            <property name="text">
+             <string>核心類型</string>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="0" colspan="2">
+           <widget class="QComboBox" name="combo_core"/>
+          </item>
+          <item row="1" column="0">
+           <widget class="QLabel" name="label_core_path">
+            <property name="text">
+             <string>核心檔案路徑</string>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="1">
+           <widget class="QLineEdit" name="edit_core_path"/>
+          </item>
+          <item row="4" column="0">
+           <widget class="QLabel" name="label_folder_path">
+            <property name="text">
+             <string>伺服器資料夾</string>
+            </property>
+           </widget>
+          </item>
+          <item row="4" column="1">
+           <widget class="QLineEdit" name="edit_folder_path"/>
+          </item>
+          <item row="6" column="0">
+           <widget class="QLabel" name="label_java_path">
+            <property name="text">
+             <string>Java 路徑</string>
+            </property>
+           </widget>
+          </item>
+          <item row="6" column="1">
+           <widget class="QLineEdit" name="edit_java_path"/>
+          </item>
+          <item row="8" column="0">
+           <widget class="QLabel" name="label_xms">
+            <property name="text">
+             <string>啟動記憶體 (Xms, MB)</string>
+            </property>
+           </widget>
+          </item>
+          <item row="8" column="0" colspan="2">
+           <widget class="QSpinBox" name="spin_xms">
+            <property name="minimum">
+             <number>128</number>
+            </property>
+            <property name="maximum">
+             <number>65536</number>
+            </property>
+           </widget>
+          </item>
+          <item row="9" column="0">
+           <widget class="QLabel" name="label_xmx">
+            <property name="text">
+             <string>最大記憶體 (Xmx, MB)</string>
+            </property>
+           </widget>
+          </item>
+          <item row="9" column="0" colspan="2">
+           <widget class="QSpinBox" name="spin_xmx">
+            <property name="minimum">
+             <number>128</number>
+            </property>
+            <property name="maximum">
+             <number>65536</number>
+            </property>
+           </widget>
+          </item>
+          <item row="10" column="0">
+           <widget class="QLabel" name="label_args">
+            <property name="text">
+             <string>Java 啟動參數</string>
+            </property>
+           </widget>
+          </item>
+          <item row="10" column="0" colspan="2">
+           <widget class="QLineEdit" name="edit_args"/>
+          </item>
+          <item row="11" column="0">
+           <widget class="QLabel" name="label_port">
+            <property name="text">
+             <string>伺服器端口</string>
+            </property>
+           </widget>
+          </item>
+          <item row="11" column="0" colspan="2">
+           <widget class="QSpinBox" name="spin_port">
+            <property name="minimum">
+             <number>1</number>
+            </property>
+            <property name="maximum">
+             <number>65535</number>
+            </property>
+           </widget>
+          </item>
+          <item row="12" column="0">
+           <widget class="QLabel" name="label_max_players">
+            <property name="text">
+             <string>最大玩家數</string>
+            </property>
+           </widget>
+          </item>
+          <item row="12" column="0" colspan="2">
+           <widget class="QSpinBox" name="spin_max_players">
+            <property name="minimum">
+             <number>1</number>
+            </property>
+            <property name="maximum">
+             <number>500</number>
+            </property>
+           </widget>
+          </item>
+          <item row="13" column="0">
+           <widget class="QLabel" name="label_world_path">
+            <property name="text">
+             <string>世界路徑</string>
+            </property>
+           </widget>
+          </item>
+          <item row="13" column="1">
+           <widget class="QLineEdit" name="edit_world_path"/>
+          </item>
+          <item row="15" column="0">
+           <widget class="QLabel" name="label_motd">
+            <property name="text">
+             <string>MOTD</string>
+            </property>
+           </widget>
+          </item>
+          <item row="15" column="0" colspan="2">
+           <widget class="QLineEdit" name="edit_motd"/>
+          </item>
+          <item row="16" column="0">
+           <widget class="QLabel" name="label_backup">
+            <property name="text">
+             <string>啟用自動備份</string>
+            </property>
+           </widget>
+          </item>
+          <item row="16" column="0" colspan="2">
+           <widget class="QCheckBox" name="check_backup"/>
+          </item>
+          <item row="17" column="0">
+           <widget class="QLabel" name="label_backup_interval">
+            <property name="text">
+             <string>備份間隔（分鐘）</string>
+            </property>
+           </widget>
+          </item>
+          <item row="17" column="0" colspan="2">
+           <widget class="QSpinBox" name="spin_backup_interval">
+            <property name="minimum">
+             <number>0</number>
+            </property>
+            <property name="maximum">
+             <number>1440</number>
+            </property>
+           </widget>
+          </item>
+          <item row="18" column="0">
+           <widget class="QLabel" name="label_language">
+            <property name="text">
+             <string>語言</string>
+            </property>
+           </widget>
+          </item>
+          <item row="18" column="0" colspan="2">
+           <widget class="QComboBox" name="combo_language"/>
+          </item>
+          <item row="19" column="0">
+           <widget class="QLabel" name="label_backup_dir">
+            <property name="text">
+             <string>備份資料夾</string>
+            </property>
+           </widget>
+          </item>
+          <item row="19" column="1">
+           <widget class="QLineEdit" name="edit_backup_dir"/>
+          </item>
+          <item row="14" column="1">
+           <widget class="QPushButton" name="btn_world">
+            <property name="text">
+             <string>選擇...</string>
+            </property>
+           </widget>
+          </item>
+          <item row="20" column="1">
+           <widget class="QPushButton" name="btn_backup_dir">
+            <property name="text">
+             <string>選擇...</string>
+            </property>
+           </widget>
+          </item>
+          <item row="7" column="1">
+           <widget class="QPushButton" name="btn_java">
+            <property name="text">
+             <string>選擇...</string>
+            </property>
+           </widget>
+          </item>
+          <item row="5" column="1">
+           <widget class="QPushButton" name="btn_folder">
+            <property name="text">
+             <string>選擇...</string>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="1">
+           <widget class="QPushButton" name="btn_core_path">
+            <property name="text">
+             <string>選擇...</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </item>
+        <item>
+         <widget class="QPushButton" name="btn_save">
+          <property name="text">
+           <string>儲存設定</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QLabel" name="lbl_status_settings">
+          <property name="styleSheet">
+           <string>color:gray;</string>
+          </property>
+          <property name="text">
+           <string>狀態：等待操作…</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </widget>
+     </widget>
+    </item>
+   </layout>
+  </widget>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>
