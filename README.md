@@ -57,7 +57,7 @@
 
 ### 技術棧
 
-- **核心平台**：Paper 1.19.4+
+- **核心平台**：Paper 1.20.6+
 - **基礎框架**：BentoBox (空島管理)
 - **科技系統**：Slimefun (科技樹)
 - **資料庫**：MariaDB (主要數據)
@@ -352,7 +352,7 @@ public class ParticleEffectManager {
 ### 系統需求
 
 #### 開發環境
-- **Java**: OpenJDK 17+
+- **Java**: OpenJDK 21+
 - **IDE**: IntelliJ IDEA / Eclipse
 - **Build Tool**: Maven 3.8+
 - **Database**: MariaDB 10.6+
@@ -372,7 +372,7 @@ public class ParticleEffectManager {
     <dependency>
         <groupId>world.bentobox</groupId>
         <artifactId>bentobox</artifactId>
-        <version>1.21.0</version>
+        <version>1.20.6</version>
     </dependency>
     
     <!-- 科技系統 -->
