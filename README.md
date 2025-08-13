@@ -2,8 +2,8 @@
 ## 革命性的Minecraft空島MMO伺服器
 
 [![開發狀態](https://img.shields.io/badge/開發狀態-規劃中-red)](https://github.com/your-repo)
-[![Minecraft版本](https://img.shields.io/badge/Minecraft-1.19.4+-brightgreen)](https://papermc.io/)
-[![Java版本](https://img.shields.io/badge/Java-17+-orange)](https://adoptium.net/)
+[![Minecraft版本](https://img.shields.io/badge/Minecraft-1.20.6+-brightgreen)](https://papermc.io/)
+[![Java版本](https://img.shields.io/badge/Java-21+-orange)](https://adoptium.net/)
 [![授權](https://img.shields.io/badge/授權-MIT-blue)](LICENSE)
 
 ---
