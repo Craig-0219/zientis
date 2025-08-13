@@ -1,0 +1,179 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>com.zientis</groupId>
+    <artifactId>zientis-parent</artifactId>
+    <version>0.1.0-ALPHA</version>
+    <packaging>pom</packaging>
+
+    <name>Zientis Server</name>
+    <description>Revolutionary Minecraft Skyblock MMO Server</description>
+    <url>https://github.com/craig900219/zientis</url>
+
+    <properties>
+        <maven.compiler.source>21</maven.compiler.source>
+        <maven.compiler.target>21</maven.compiler.target>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        
+        <!-- Minecraft Dependencies -->
+        <paper.version>1.20.6-R0.1-SNAPSHOT</paper.version>
+        <bentobox.version>1.20.6</bentobox.version>
+        <slimefun.version>RC-32</slimefun.version>
+        <vault.version>1.7</vault.version>
+        
+        <!-- Database -->
+        <mariadb.version>3.3.2</mariadb.version>
+        <redis.version>5.0.2</redis.version>
+        <hikari.version>5.1.0</hikari.version>
+        
+        <!-- Testing -->
+        <junit.version>5.10.1</junit.version>
+        <mockito.version>5.8.0</mockito.version>
+        
+        <!-- Build Tools -->
+        <maven.compiler.version>3.11.0</maven.compiler.version>
+        <maven.shade.version>3.5.1</maven.shade.version>
+    </properties>
+
+    <modules>
+        <module>zientis-core</module>
+        <module>zientis-multiworld</module>
+        <module>zientis-economy</module>
+        <module>zientis-display</module>
+        <module>zientis-nations</module>
+        <module>zientis-social</module>
+    </modules>
+
+    <repositories>
+        <!-- PaperMC -->
+        <repository>
+            <id>papermc-repo</id>
+            <url>https://repo.papermc.io/repository/maven-public/</url>
+        </repository>
+        
+        <!-- Sonatype -->
+        <repository>
+            <id>sonatype</id>
+            <url>https://oss.sonatype.org/content/groups/public/</url>
+        </repository>
+        
+        <!-- BentoBox -->
+        <repository>
+            <id>bentobox-repo</id>
+            <url>https://repo.codemc.org/repository/maven-public/</url>
+        </repository>
+        
+        <!-- Slimefun -->
+        <repository>
+            <id>jitpack.io</id>
+            <url>https://jitpack.io</url>
+        </repository>
+    </repositories>
+
+    <dependencyManagement>
+        <dependencies>
+            <!-- Paper API -->
+            <dependency>
+                <groupId>io.papermc.paper</groupId>
+                <artifactId>paper-api</artifactId>
+                <version>${paper.version}</version>
+                <scope>provided</scope>
+            </dependency>
+            
+            <!-- BentoBox -->
+            <dependency>
+                <groupId>world.bentobox</groupId>
+                <artifactId>bentobox</artifactId>
+                <version>${bentobox.version}</version>
+                <scope>provided</scope>
+            </dependency>
+            
+            <!-- Slimefun -->
+            <dependency>
+                <groupId>com.github.TheBusyBiscuit</groupId>
+                <artifactId>Slimefun4</artifactId>
+                <version>${slimefun.version}</version>
+                <scope>provided</scope>
+            </dependency>
+            
+            <!-- Vault -->
+            <dependency>
+                <groupId>net.milkbowl.vault</groupId>
+                <artifactId>VaultAPI</artifactId>
+                <version>${vault.version}</version>
+                <scope>provided</scope>
+            </dependency>
+            
+            <!-- Database -->
+            <dependency>
+                <groupId>org.mariadb.jdbc</groupId>
+                <artifactId>mariadb-java-client</artifactId>
+                <version>${mariadb.version}</version>
+            </dependency>
+            
+            <dependency>
+                <groupId>redis.clients</groupId>
+                <artifactId>jedis</artifactId>
+                <version>${redis.version}</version>
+            </dependency>
+            
+            <dependency>
+                <groupId>com.zaxxer</groupId>
+                <artifactId>HikariCP</artifactId>
+                <version>${hikari.version}</version>
+            </dependency>
+            
+            <!-- Testing -->
+            <dependency>
+                <groupId>org.junit.jupiter</groupId>
+                <artifactId>junit-jupiter</artifactId>
+                <version>${junit.version}</version>
+                <scope>test</scope>
+            </dependency>
+            
+            <dependency>
+                <groupId>org.mockito</groupId>
+                <artifactId>mockito-core</artifactId>
+                <version>${mockito.version}</version>
+                <scope>test</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
+    <build>
+        <defaultGoal>clean package</defaultGoal>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-compiler-plugin</artifactId>
+                    <version>${maven.compiler.version}</version>
+                    <configuration>
+                        <source>21</source>
+                        <target>21</target>
+                    </configuration>
+                </plugin>
+                
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-shade-plugin</artifactId>
+                    <version>${maven.shade.version}</version>
+                    <executions>
+                        <execution>
+                            <phase>package</phase>
+                            <goals>
+                                <goal>shade</goal>
+                            </goals>
+                            <configuration>
+                                <createDependencyReducedPom>false</createDependencyReducedPom>
+                            </configuration>
+                        </execution>
+                    </executions>
+                </plugin>
+            </plugins>
+        </pluginManagement>
+    </build>
+</project>

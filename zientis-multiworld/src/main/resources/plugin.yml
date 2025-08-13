@@ -1,0 +1,85 @@
+name: ZientisMultiWorld
+version: 0.1.0-ALPHA
+main: com.zientis.multiworld.ZientisMultiWorldPlugin
+api-version: 1.20
+author: Zientis Team
+description: Multi-world management system for Zientis Server
+
+depend: []
+softdepend: [BentoBox]
+
+commands:
+  island:
+    description: Island management commands
+    usage: /island <create|delete|home|info|list>
+    aliases: [is]
+    permission: zientis.island
+    permission-message: You don't have permission to use island commands
+
+permissions:
+  zientis.*:
+    description: Access to all Zientis features
+    default: false
+    children:
+      zientis.island.*: true
+      zientis.admin.*: true
+      
+  zientis.island.*:
+    description: Access to all island commands
+    default: true
+    children:
+      zientis.island.create: true
+      zientis.island.delete: true
+      zientis.island.home: true
+      zientis.island.info: true
+      zientis.island.list: true
+      
+  zientis.island.create:
+    description: Create a new island
+    default: true
+    
+  zientis.island.delete:
+    description: Delete your island
+    default: true
+    
+  zientis.island.home:
+    description: Teleport to your island
+    default: true
+    
+  zientis.island.info:
+    description: View island information
+    default: true
+    
+  zientis.island.list:
+    description: List all islands
+    default: true
+    
+  zientis.admin.*:
+    description: Admin commands for island management
+    default: op
+    children:
+      zientis.admin.delete: true
+      zientis.admin.teleport: true
+      zientis.admin.info: true
+      zientis.admin.list: true
+      zientis.admin.unload: true
+      
+  zientis.admin.delete:
+    description: Delete any island
+    default: op
+    
+  zientis.admin.teleport:
+    description: Teleport to any island
+    default: op
+    
+  zientis.admin.info:
+    description: View detailed island information
+    default: op
+    
+  zientis.admin.list:
+    description: List all islands with detailed info
+    default: op
+    
+  zientis.admin.unload:
+    description: Force unload island worlds
+    default: op

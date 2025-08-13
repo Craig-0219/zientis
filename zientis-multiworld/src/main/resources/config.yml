@@ -1,0 +1,119 @@
+# Zientis Multi-World System Configuration
+# Version 0.1.0-ALPHA
+
+# World Management Settings
+world-management:
+  # Maximum number of worlds to keep loaded simultaneously
+  max-loaded-worlds: 50
+  
+  # Time in minutes before unloading inactive worlds
+  unload-delay-minutes: 15
+  
+  # Memory monitoring interval in minutes
+  memory-check-interval: 5
+  
+  # Memory usage thresholds (percentage)
+  memory-thresholds:
+    warning: 60.0    # Start routine cleanup
+    critical: 80.0   # Start emergency cleanup
+  
+  # World creation settings
+  creation:
+    # Default world type for new islands
+    default-world-type: "NORMAL"
+    
+    # Default environment
+    default-environment: "NORMAL"
+    
+    # Generate structures in new worlds
+    generate-structures: false
+    
+    # Use unique seed for each island
+    unique-seeds: true
+
+# Island Settings
+island-settings:
+  # Default island level for new islands
+  default-level: 1
+  
+  # Default spawn height for new islands
+  spawn-height: 64
+  
+  # Island world name prefix
+  world-name-prefix: "island_"
+  
+  # Auto-create island on first join
+  auto-create-on-join: true
+
+# Performance Settings
+performance:
+  # Number of threads for world operations
+  world-operation-threads: 4
+  
+  # Batch size for world operations
+  batch-size: 10
+  
+  # Enable performance monitoring
+  monitoring-enabled: true
+  
+  # Log performance statistics
+  log-statistics: true
+  
+  # Statistics logging interval (minutes)
+  statistics-interval: 10
+
+# Database Settings (for future implementation)
+database:
+  # Database type (sqlite, mysql, mariadb)
+  type: "sqlite"
+  
+  # SQLite settings
+  sqlite:
+    filename: "islands.db"
+  
+  # MySQL/MariaDB settings (for future use)
+  mysql:
+    host: "localhost"
+    port: 3306
+    database: "zientis"
+    username: "zientis"
+    password: "password"
+    
+  # Connection pool settings
+  connection-pool:
+    maximum-pool-size: 10
+    minimum-idle: 2
+    connection-timeout: 30000
+    idle-timeout: 600000
+    max-lifetime: 1800000
+
+# Backup Settings
+backup:
+  # Enable automatic backups
+  enabled: true
+  
+  # Backup interval in hours
+  interval-hours: 6
+  
+  # Number of backups to keep
+  keep-backups: 7
+  
+  # Compress backup files
+  compress: true
+  
+  # Backup location
+  backup-directory: "backups/islands"
+
+# Debug and Logging
+debug:
+  # Enable debug logging
+  enabled: false
+  
+  # Log world creation/deletion
+  log-world-operations: true
+  
+  # Log memory usage
+  log-memory-usage: true
+  
+  # Log performance metrics
+  log-performance: true
