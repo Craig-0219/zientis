@@ -31,12 +31,14 @@
             <scope>provided</scope>
         </dependency>
 
-        <!-- BentoBox -->
+        <!-- BentoBox - 暫時註解掉以進行測試 -->
+        <!--
         <dependency>
             <groupId>world.bentobox</groupId>
             <artifactId>bentobox</artifactId>
             <scope>provided</scope>
         </dependency>
+        -->
 
         <!-- Testing -->
         <dependency>
