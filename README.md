@@ -1,9 +1,10 @@
 # 🌌 賽恩堤斯 (Zientis) 伺服器計畫
 ## 革命性的Minecraft空島MMO伺服器
 
-[![開發狀態](https://img.shields.io/badge/開發狀態-規劃中-red)](https://github.com/your-repo)
+[![開發狀態](https://img.shields.io/badge/開發狀態-Stage%202%20完成-green)](https://github.com/craig900219/zientis)
 [![Minecraft版本](https://img.shields.io/badge/Minecraft-1.20.6+-brightgreen)](https://papermc.io/)
 [![Java版本](https://img.shields.io/badge/Java-21+-orange)](https://adoptium.net/)
+[![構建工具](https://img.shields.io/badge/Build-Gradle%208.7-blue)](https://gradle.org/)
 [![授權](https://img.shields.io/badge/授權-MIT-blue)](LICENSE)
 
 ---
@@ -354,9 +355,10 @@ public class ParticleEffectManager {
 #### 開發環境
 - **Java**: OpenJDK 21+
 - **IDE**: IntelliJ IDEA / Eclipse
-- **Build Tool**: Maven 3.8+
+- **Build Tool**: Gradle 8.7+ 
 - **Database**: MariaDB 10.6+
 - **Cache**: Redis 6.0+
+- **Testing**: JUnit 5 + Mockito
 
 #### 伺服器需求
 - **RAM**: 16GB+ (推薦32GB)
@@ -366,29 +368,24 @@ public class ParticleEffectManager {
 
 ### 依賴插件
 
-```xml
-<dependencies>
-    <!-- 核心框架 -->
-    <dependency>
-        <groupId>world.bentobox</groupId>
-        <artifactId>bentobox</artifactId>
-        <version>1.20.6</version>
-    </dependency>
+```kotlin
+dependencies {
+    // 核心框架
+    compileOnly("io.papermc.paper:paper-api:1.20.6-R0.1-SNAPSHOT")
     
-    <!-- 科技系統 -->
-    <dependency>
-        <groupId>io.github.thebusybiscuit</groupId>
-        <artifactId>slimefun4</artifactId>
-        <version>RC-32</version>
-    </dependency>
+    // 空島管理
+    compileOnly("world.bentobox:bentobox:1.20.6")
     
-    <!-- 經濟API -->
-    <dependency>
-        <groupId>net.milkbowl.vault</groupId>
-        <artifactId>VaultAPI</artifactId>
-        <version>1.7</version>
-    </dependency>
-</dependencies>
+    // 科技系統
+    compileOnly("io.github.thebusybiscuit:slimefun4:RC-32")
+    
+    // 經濟API
+    compileOnly("net.milkbowl.vault:VaultAPI:1.7")
+    
+    // 測試框架
+    testImplementation("org.junit.jupiter:junit-jupiter:5.10.0")
+    testImplementation("org.mockito:mockito-core:5.5.0")
+}
 ```
 
 ### 專案結構

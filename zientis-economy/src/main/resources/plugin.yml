@@ -1,0 +1,57 @@
+name: ZientisEconomy
+version: ${project.version}
+main: com.zientis.economy.ZientisEconomyPlugin
+api-version: 1.20
+
+description: Economy system for Zientis Server
+author: Zientis Development Team
+website: https://github.com/craig900219/zientis
+
+depend: []
+softdepend: [Vault, ZientisCore]
+loadbefore: []
+
+commands:
+  economy:
+    description: Economy administration commands
+    usage: /economy <subcommand> [args...]
+    permission: zientis.economy.admin
+    aliases: [eco, econ]
+  
+  balance:
+    description: Check your or another player's balance
+    usage: /balance [player]
+    permission: zientis.economy.balance
+    aliases: [bal, money]
+  
+  pay:
+    description: Transfer money to another player
+    usage: /pay <player> <amount> [description]
+    permission: zientis.economy.pay
+    aliases: [transfer, send]
+
+permissions:
+  zientis.economy.*:
+    description: All economy permissions
+    default: op
+    children:
+      zientis.economy.admin: true
+      zientis.economy.balance: true
+      zientis.economy.balance.others: true
+      zientis.economy.pay: true
+  
+  zientis.economy.admin:
+    description: Access to economy administration commands
+    default: op
+  
+  zientis.economy.balance:
+    description: Check your own balance
+    default: true
+  
+  zientis.economy.balance.others:
+    description: Check other players' balances
+    default: op
+  
+  zientis.economy.pay:
+    description: Transfer money to other players
+    default: true

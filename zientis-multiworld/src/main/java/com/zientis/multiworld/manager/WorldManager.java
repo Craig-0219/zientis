@@ -3,6 +3,7 @@ package com.zientis.multiworld.manager;
 import com.zientis.core.api.ZientisAPI;
 import com.zientis.core.data.Island;
 import com.zientis.multiworld.api.ZientisMultiWorldAPI;
+import com.zientis.multiworld.backup.BackupManager;
 import org.bukkit.*;
 import org.bukkit.plugin.Plugin;
 
@@ -29,6 +30,7 @@ public class WorldManager implements ZientisMultiWorldAPI {
     private final Map<UUID, Island> islands;
     private final Map<UUID, Long> unloadSchedule;
     private final ScheduledExecutorService scheduler;
+    private final BackupManager backupManager;
     
     // Configuration
     private static final int MAX_LOADED_WORLDS = 50;
@@ -41,6 +43,7 @@ public class WorldManager implements ZientisMultiWorldAPI {
         this.islands = new ConcurrentHashMap<>();
         this.unloadSchedule = new ConcurrentHashMap<>();
         this.scheduler = Executors.newScheduledThreadPool(4);
+        this.backupManager = new BackupManager(plugin);
         
         // Start memory monitoring
         startMemoryMonitoring();
@@ -350,8 +353,53 @@ public class WorldManager implements ZientisMultiWorldAPI {
                 .forEach(island -> scheduleWorldUnload(island.getIslandId(), UNLOAD_DELAY_MINUTES * 60));
     }
     
+    /**
+     * Get the backup manager instance
+     * @return The backup manager
+     */
+    public BackupManager getBackupManager() {
+        return backupManager;
+    }
+    
+    /**
+     * Create a backup of an island world
+     * @param islandId The island UUID to backup
+     * @return Future containing the backup result
+     */
+    public CompletableFuture<BackupManager.BackupResult> createIslandBackup(UUID islandId) {
+        Island island = islands.get(islandId);
+        if (island == null) {
+            return CompletableFuture.completedFuture(
+                new BackupManager.BackupResult(false, "Island not found"));
+        }
+        
+        return backupManager.createBackup(island);
+    }
+    
+    /**
+     * Restore an island from backup
+     * @param islandId The island UUID to restore
+     * @param backupFile The backup file to restore from
+     * @return Future containing the restore result
+     */
+    public CompletableFuture<BackupManager.BackupResult> restoreIslandBackup(UUID islandId, File backupFile) {
+        Island island = islands.get(islandId);
+        if (island == null) {
+            return CompletableFuture.completedFuture(
+                new BackupManager.BackupResult(false, "Island not found"));
+        }
+        
+        return backupManager.restoreBackup(island, backupFile);
+    }
+    
     public void shutdown() {
         logger.info("Shutting down WorldManager...");
+        
+        // Shutdown backup manager first
+        if (backupManager != null) {
+            backupManager.shutdown();
+        }
+        
         scheduler.shutdown();
         try {
             if (!scheduler.awaitTermination(30, TimeUnit.SECONDS)) {
