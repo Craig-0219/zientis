@@ -112,4 +112,73 @@ public interface ZientisMultiWorldAPI {
         double getUsagePercentage();
         int getLoadedWorlds();
     }
+    
+    // ============ Discord Bot API ============
+    
+    /**
+     * Get Discord-formatted island data for a player
+     * @param playerId Player UUID
+     * @return CompletableFuture containing Discord island data
+     */
+    CompletableFuture<com.zientis.multiworld.discord.DiscordIslandData> getDiscordIslandData(UUID playerId);
+    
+    /**
+     * Get Discord-formatted island data by island ID
+     * @param islandId Island UUID
+     * @return CompletableFuture containing Discord island data
+     */
+    CompletableFuture<com.zientis.multiworld.discord.DiscordIslandData> getDiscordIslandDataById(UUID islandId);
+    
+    /**
+     * Get Discord-formatted island data by Discord user ID
+     * @param discordUserId Discord user ID
+     * @return CompletableFuture containing Discord island data
+     */
+    CompletableFuture<com.zientis.multiworld.discord.DiscordIslandData> getDiscordIslandDataByDiscordUser(String discordUserId);
+    
+    /**
+     * Get Discord-formatted island ranking
+     * @param criteria Ranking criteria (visitors, size, age)
+     * @param limit Number of top islands to return
+     * @return CompletableFuture containing list of Discord island data
+     */
+    CompletableFuture<List<com.zientis.multiworld.discord.DiscordIslandData>> getDiscordIslandRanking(String criteria, int limit);
+    
+    /**
+     * Get Discord-formatted list of islands needing attention
+     * @return CompletableFuture containing list of islands with issues
+     */
+    CompletableFuture<List<com.zientis.multiworld.discord.DiscordIslandData>> getDiscordIslandsNeedingAttention();
+    
+    /**
+     * Handle Discord command for multiworld system
+     * @param command Command name
+     * @param args Command arguments
+     * @param discordUserId Discord user ID
+     * @return CompletableFuture containing command execution result
+     */
+    CompletableFuture<String> handleDiscordMultiWorldCommand(String command, String[] args, String discordUserId);
+    
+    /**
+     * Send Discord webhook notification for multiworld events
+     * @param eventType Event type (island_created, backup_completed, etc.)
+     * @param islandId Related island ID
+     * @param message Notification message
+     * @return CompletableFuture containing success status
+     */
+    CompletableFuture<Boolean> sendDiscordMultiWorldNotification(String eventType, UUID islandId, String message);
+    
+    /**
+     * Get Discord-formatted server multiworld statistics
+     * @return CompletableFuture containing Discord-formatted multiworld stats
+     */
+    CompletableFuture<String> getDiscordMultiWorldStats();
+    
+    /**
+     * Trigger manual backup for an island via Discord
+     * @param islandId Island UUID
+     * @param requesterId Discord user ID of requester
+     * @return CompletableFuture containing backup result message
+     */
+    CompletableFuture<String> triggerDiscordBackup(UUID islandId, String requesterId);
 }

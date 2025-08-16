@@ -1,0 +1,77 @@
+name: ZientisDisplay
+version: ${project.version}
+main: com.zientis.display.ZientisDisplayPlugin
+api-version: 1.20
+author: Craig
+description: Zientis Island Display System - 3D Miniature Island Display System
+
+depend:
+  - ZientisCore
+  - ZientisMultiWorld
+
+softdepend:
+  - HolographicDisplays
+  - ProtocolLib
+
+commands:
+  display:
+    description: 島嶼展示系統指令
+    usage: /display <子指令> [參數...]
+    aliases: [islanddisplay, zd]
+    permission: zientis.display.use
+
+permissions:
+  zientis.display.*:
+    description: 所有展示系統權限
+    default: op
+    children:
+      zientis.display.use: true
+      zientis.display.create: true
+      zientis.display.remove: true
+      zientis.display.update: true
+      zientis.display.list: true
+      zientis.display.info: true
+      zientis.display.teleport: true
+      zientis.display.stats: true
+      zientis.display.manage: true
+      zientis.display.admin: true
+
+  zientis.display.use:
+    description: 基本展示系統使用權限
+    default: true
+
+  zientis.display.create:
+    description: 創建島嶼展示的權限
+    default: op
+
+  zientis.display.remove:
+    description: 移除島嶼展示的權限
+    default: op
+
+  zientis.display.update:
+    description: 更新島嶼展示的權限
+    default: op
+
+  zientis.display.list:
+    description: 列出島嶼展示的權限
+    default: true
+
+  zientis.display.info:
+    description: 查看島嶼展示信息的權限
+    default: true
+
+  zientis.display.teleport:
+    description: 傳送到島嶼的權限
+    default: true
+
+  zientis.display.stats:
+    description: 查看系統統計的權限
+    default: op
+
+  zientis.display.manage:
+    description: 管理島嶼展示的權限
+    default: op
+
+  zientis.display.admin:
+    description: 管理員權限 (包含所有功能)
+    default: op

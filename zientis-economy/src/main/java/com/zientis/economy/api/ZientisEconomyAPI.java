@@ -164,6 +164,54 @@ public interface ZientisEconomyAPI {
      */
     CompletableFuture<Boolean> backupEconomyData();
     
+    // ============ Discord Bot API ============
+    
+    /**
+     * Get Discord-formatted economy data for a player
+     * @param playerId Player UUID
+     * @return CompletableFuture containing Discord economy data
+     */
+    CompletableFuture<com.zientis.economy.discord.DiscordEconomyData> getDiscordEconomyData(UUID playerId);
+    
+    /**
+     * Get Discord-formatted economy data by Discord user ID
+     * @param discordUserId Discord user ID
+     * @return CompletableFuture containing Discord economy data
+     */
+    CompletableFuture<com.zientis.economy.discord.DiscordEconomyData> getDiscordEconomyDataByDiscordUser(String discordUserId);
+    
+    /**
+     * Get Discord-formatted wealth ranking
+     * @param limit Number of top players to return
+     * @return CompletableFuture containing list of Discord economy data
+     */
+    CompletableFuture<List<com.zientis.economy.discord.DiscordEconomyData>> getDiscordWealthRanking(int limit);
+    
+    /**
+     * Handle Discord command for economy system
+     * @param command Command name
+     * @param args Command arguments
+     * @param discordUserId Discord user ID
+     * @return CompletableFuture containing command execution result
+     */
+    CompletableFuture<String> handleDiscordEconomyCommand(String command, String[] args, String discordUserId);
+    
+    /**
+     * Send Discord webhook notification for economy events
+     * @param eventType Event type (transfer, large_transaction, etc.)
+     * @param playerId Related player ID
+     * @param amount Transaction amount
+     * @param message Notification message
+     * @return CompletableFuture containing success status
+     */
+    CompletableFuture<Boolean> sendDiscordEconomyNotification(String eventType, UUID playerId, double amount, String message);
+    
+    /**
+     * Get Discord-formatted server economy statistics
+     * @return CompletableFuture containing Discord-formatted economy stats
+     */
+    CompletableFuture<String> getDiscordEconomyStats();
+    
     /**
      * Economy statistics holder
      */

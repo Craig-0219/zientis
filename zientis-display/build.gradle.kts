@@ -9,11 +9,19 @@ description = "Display and UI system for Zientis Server"
 dependencies {
     // Core Module
     api(project(":zientis-core"))
+    api(project(":zientis-multiworld"))
     
     // Paper API
     compileOnly("io.papermc.paper:paper-api:${property("paperVersion")}")
     
-    // Testing dependencies are inherited from parent
+    // 全息圖庫 (HolographicDisplays API)
+    compileOnly("me.filoghost.holographicdisplays:holographicdisplays-api:3.0.0")
+    
+    // NBT API for advanced block handling
+    compileOnly("de.tr7zw:item-nbt-api:2.12.2")
+    
+    // Testing dependencies
+    testImplementation("com.github.seeseemelk:MockBukkit-v1.20:3.9.0")
 }
 
 tasks {
