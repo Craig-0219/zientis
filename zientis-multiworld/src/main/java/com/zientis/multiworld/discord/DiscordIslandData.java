@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.UUID;
 
 /**
@@ -232,7 +233,7 @@ public class DiscordIslandData {
                 value = String.format("%.1f MB", storageSizeMB);
                 break;
             case "age":
-                long days = java.time.ChronoUnit.DAYS.between(createdDate.toLocalDate(), java.time.LocalDate.now());
+                long days = ChronoUnit.DAYS.between(createdDate.toLocalDate(), java.time.LocalDate.now());
                 value = days + " 天";
                 break;
             default:
@@ -273,7 +274,7 @@ public class DiscordIslandData {
         StringBuilder msg = new StringBuilder("⚠️ **需要關注**: ");
         
         if (lastVisit != null && lastVisit.isBefore(LocalDateTime.now().minusDays(30))) {
-            long days = java.time.ChronoUnit.DAYS.between(lastVisit.toLocalDate(), java.time.LocalDate.now());
+            long days = ChronoUnit.DAYS.between(lastVisit.toLocalDate(), java.time.LocalDate.now());
             msg.append("已 ").append(days).append(" 天未訪問；");
         }
         

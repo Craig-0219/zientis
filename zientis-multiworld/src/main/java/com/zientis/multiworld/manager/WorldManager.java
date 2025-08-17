@@ -8,6 +8,7 @@ import org.bukkit.*;
 import org.bukkit.plugin.Plugin;
 
 import java.io.File;
+import java.util.Arrays;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
@@ -390,6 +391,158 @@ public class WorldManager implements ZientisMultiWorldAPI {
         }
         
         return backupManager.restoreBackup(island, backupFile);
+    }
+    
+    @Override
+    public CompletableFuture<String> triggerDiscordBackup(UUID islandId, String requesterId) {
+        return CompletableFuture.supplyAsync(() -> {
+            try {
+                Island island = islands.get(islandId);
+                if (island == null) {
+                    return "❌ 找不到指定的島嶼";
+                }
+                
+                // Create backup
+                BackupManager.BackupResult result = createIslandBackup(islandId).join();
+                
+                if (result.isSuccess()) {
+                    return String.format("✅ 島嶼 `%s` 的備份已完成\n📁 備份檔案: %s", 
+                        island.getWorldName(), result.getMessage());
+                } else {
+                    return String.format("❌ 島嶼備份失敗: %s", result.getMessage());
+                }
+                
+            } catch (Exception e) {
+                logger.severe("Failed to create Discord backup for island " + islandId + ": " + e.getMessage());
+                return "❌ 備份過程中發生錯誤，請聯繫管理員";
+            }
+        });
+    }
+    
+    @Override
+    public CompletableFuture<String> getDiscordMultiWorldStats() {
+        return CompletableFuture.supplyAsync(() -> {
+            try {
+                StringBuilder stats = new StringBuilder();
+                stats.append("🌍 **多世界系統統計**\n\n");
+                
+                stats.append("🏝️ 總島嶼數: ").append(getIslandCount()).append("\n");
+                stats.append("🌐 已載入世界: ").append(getLoadedWorldCount()).append("\n");
+                
+                MemoryStats memStats = getMemoryStats();
+                stats.append("💾 記憶體使用: ").append(String.format("%.1f%%", memStats.getUsagePercentage())).append("\n");
+                stats.append("📊 記憶體: ").append(String.format("%.1fMB / %.1fMB", 
+                    memStats.getUsedMemory() / (1024.0 * 1024.0),
+                    memStats.getMaxMemory() / (1024.0 * 1024.0))).append("\n");
+                
+                return stats.toString();
+            } catch (Exception e) {
+                logger.severe("Failed to generate Discord multiworld stats: " + e.getMessage());
+                return "❌ 無法獲取多世界統計資料";
+            }
+        });
+    }
+    
+    @Override
+    public CompletableFuture<Boolean> sendDiscordMultiWorldNotification(String eventType, UUID islandId, String message) {
+        return CompletableFuture.supplyAsync(() -> {
+            try {
+                // TODO: Implement Discord webhook notification
+                logger.info(String.format("Discord notification [%s]: Island %s, Message: %s", 
+                    eventType, islandId, message));
+                return true;
+            } catch (Exception e) {
+                logger.severe("Failed to send Discord multiworld notification: " + e.getMessage());
+                return false;
+            }
+        });
+    }
+    
+    @Override
+    public CompletableFuture<String> handleDiscordMultiWorldCommand(String command, String[] args, String discordUserId) {
+        return CompletableFuture.supplyAsync(() -> {
+            try {
+                // TODO: Implement Discord command handling
+                logger.info(String.format("Discord multiworld command from %s: %s %s", 
+                    discordUserId, command, Arrays.toString(args)));
+                return "✅ 多世界指令執行完成";
+            } catch (Exception e) {
+                logger.severe("Failed to handle Discord multiworld command: " + e.getMessage());
+                return "❌ 多世界指令執行失敗";
+            }
+        });
+    }
+    
+    @Override
+    public CompletableFuture<List<com.zientis.multiworld.discord.DiscordIslandData>> getDiscordIslandsNeedingAttention() {
+        return CompletableFuture.supplyAsync(() -> {
+            try {
+                // TODO: Implement islands needing attention
+                List<com.zientis.multiworld.discord.DiscordIslandData> needsAttention = new ArrayList<>();
+                logger.info("Generating Discord islands needing attention list");
+                return needsAttention;
+            } catch (Exception e) {
+                logger.severe("Failed to get Discord islands needing attention: " + e.getMessage());
+                return new ArrayList<>();
+            }
+        });
+    }
+    
+    @Override
+    public CompletableFuture<List<com.zientis.multiworld.discord.DiscordIslandData>> getDiscordIslandRanking(String criteria, int limit) {
+        return CompletableFuture.supplyAsync(() -> {
+            try {
+                // TODO: Implement island ranking by criteria
+                List<com.zientis.multiworld.discord.DiscordIslandData> ranking = new ArrayList<>();
+                logger.info(String.format("Generating Discord island ranking by %s for top %d islands", criteria, limit));
+                return ranking;
+            } catch (Exception e) {
+                logger.severe("Failed to get Discord island ranking: " + e.getMessage());
+                return new ArrayList<>();
+            }
+        });
+    }
+    
+    @Override
+    public CompletableFuture<com.zientis.multiworld.discord.DiscordIslandData> getDiscordIslandDataByDiscordUser(String discordUserId) {
+        return CompletableFuture.supplyAsync(() -> {
+            try {
+                // TODO: Implement Discord user to player mapping and island data retrieval
+                logger.info(String.format("Getting Discord island data for Discord user: %s", discordUserId));
+                return null; // Return null for now - needs Discord user mapping implementation
+            } catch (Exception e) {
+                logger.severe("Failed to get Discord island data by Discord user: " + e.getMessage());
+                return null;
+            }
+        });
+    }
+    
+    @Override
+    public CompletableFuture<com.zientis.multiworld.discord.DiscordIslandData> getDiscordIslandDataById(UUID islandId) {
+        return CompletableFuture.supplyAsync(() -> {
+            try {
+                // TODO: Implement Discord island data generation by island ID
+                logger.info(String.format("Getting Discord island data for island: %s", islandId));
+                return null; // Return null for now - needs DiscordIslandData implementation
+            } catch (Exception e) {
+                logger.severe("Failed to get Discord island data by ID: " + e.getMessage());
+                return null;
+            }
+        });
+    }
+    
+    @Override
+    public CompletableFuture<com.zientis.multiworld.discord.DiscordIslandData> getDiscordIslandData(UUID playerId) {
+        return CompletableFuture.supplyAsync(() -> {
+            try {
+                // TODO: Implement Discord island data generation for player
+                logger.info(String.format("Getting Discord island data for player: %s", playerId));
+                return null; // Return null for now - needs DiscordIslandData implementation
+            } catch (Exception e) {
+                logger.severe("Failed to get Discord island data for player: " + e.getMessage());
+                return null;
+            }
+        });
     }
     
     public void shutdown() {

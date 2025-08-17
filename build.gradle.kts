@@ -53,7 +53,11 @@ subprojects {
     dependencies {
         // Testing
         testImplementation("org.junit.jupiter:junit-jupiter:5.10.1")
+        testImplementation("org.junit.jupiter:junit-jupiter-api:5.10.1")
+        testImplementation("org.junit.jupiter:junit-jupiter-engine:5.10.1")
+        testImplementation("org.junit.platform:junit-platform-launcher:1.10.1")
         testImplementation("org.mockito:mockito-core:5.8.0")
+        testRuntimeOnly("org.junit.platform:junit-platform-launcher:1.10.1")
     }
 }
 

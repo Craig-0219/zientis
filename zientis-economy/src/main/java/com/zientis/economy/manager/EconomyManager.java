@@ -371,6 +371,117 @@ public class EconomyManager implements ZientisEconomyAPI {
         }
     }
     
+    @Override
+    public CompletableFuture<String> getDiscordEconomyStats() {
+        return CompletableFuture.supplyAsync(() -> {
+            try {
+                StringBuilder stats = new StringBuilder();
+                stats.append("📊 **經濟系統統計**\n\n");
+                
+                // Basic stats
+                stats.append("💰 總流通量: ").append(calculateTotalCirculation()).append(" 鑽石\n");
+                stats.append("👥 總帳戶數: ").append(accountCache.size()).append("\n");
+                stats.append("📈 總交易次數: ").append(transactionHistory.size()).append("\n");
+                
+                // Average balance
+                if (!accountCache.isEmpty()) {
+                    BigDecimal totalBalance = accountCache.values().stream()
+                        .map(EconomyAccount::getBalance)
+                        .reduce(BigDecimal.ZERO, BigDecimal::add);
+                    BigDecimal avgBalance = totalBalance.divide(BigDecimal.valueOf(accountCache.size()), 2, java.math.RoundingMode.HALF_UP);
+                    stats.append("💎 平均餘額: ").append(avgBalance).append(" 鑽石\n");
+                }
+                
+                return stats.toString();
+            } catch (Exception e) {
+                logger.severe("Failed to generate Discord economy stats: " + e.getMessage());
+                return "❌ 無法獲取經濟統計資料";
+            }
+        }, executorService);
+    }
+    
+    @Override
+    public CompletableFuture<Boolean> sendDiscordEconomyNotification(String eventType, UUID playerId, double amount, String message) {
+        return CompletableFuture.supplyAsync(() -> {
+            try {
+                // TODO: Implement Discord webhook notification
+                logger.info(String.format("Discord notification [%s]: Player %s, Amount %.2f, Message: %s", 
+                    eventType, playerId, amount, message));
+                return true;
+            } catch (Exception e) {
+                logger.severe("Failed to send Discord economy notification: " + e.getMessage());
+                return false;
+            }
+        }, executorService);
+    }
+    
+    @Override
+    public CompletableFuture<String> handleDiscordEconomyCommand(String command, String[] args, String discordUserId) {
+        return CompletableFuture.supplyAsync(() -> {
+            try {
+                // TODO: Implement Discord command handling
+                logger.info(String.format("Discord command from %s: %s %s", 
+                    discordUserId, command, Arrays.toString(args)));
+                return "✅ 指令執行完成";
+            } catch (Exception e) {
+                logger.severe("Failed to handle Discord economy command: " + e.getMessage());
+                return "❌ 指令執行失敗";
+            }
+        }, executorService);
+    }
+    
+    @Override
+    public CompletableFuture<List<com.zientis.economy.discord.DiscordEconomyData>> getDiscordWealthRanking(int limit) {
+        return CompletableFuture.supplyAsync(() -> {
+            try {
+                // TODO: Implement Discord wealth ranking
+                List<com.zientis.economy.discord.DiscordEconomyData> ranking = new ArrayList<>();
+                logger.info(String.format("Generating Discord wealth ranking for top %d players", limit));
+                return ranking;
+            } catch (Exception e) {
+                logger.severe("Failed to get Discord wealth ranking: " + e.getMessage());
+                return new ArrayList<>();
+            }
+        }, executorService);
+    }
+    
+    @Override
+    public CompletableFuture<com.zientis.economy.discord.DiscordEconomyData> getDiscordEconomyDataByDiscordUser(String discordUserId) {
+        return CompletableFuture.supplyAsync(() -> {
+            try {
+                // TODO: Implement Discord user to player mapping and economy data retrieval
+                logger.info(String.format("Getting Discord economy data for user: %s", discordUserId));
+                return null; // Return null for now - needs Discord user mapping implementation
+            } catch (Exception e) {
+                logger.severe("Failed to get Discord economy data by Discord user: " + e.getMessage());
+                return null;
+            }
+        }, executorService);
+    }
+    
+    @Override
+    public CompletableFuture<com.zientis.economy.discord.DiscordEconomyData> getDiscordEconomyData(UUID playerId) {
+        return CompletableFuture.supplyAsync(() -> {
+            try {
+                // TODO: Implement Discord economy data generation for player
+                logger.info(String.format("Getting Discord economy data for player: %s", playerId));
+                return null; // Return null for now - needs DiscordEconomyData implementation
+            } catch (Exception e) {
+                logger.severe("Failed to get Discord economy data: " + e.getMessage());
+                return null;
+            }
+        }, executorService);
+    }
+    
+    /**
+     * Calculate total circulation
+     */
+    private BigDecimal calculateTotalCirculation() {
+        return accountCache.values().stream()
+            .map(EconomyAccount::getBalance)
+            .reduce(BigDecimal.ZERO, BigDecimal::add);
+    }
+    
     /**
      * Shutdown the economy manager
      */

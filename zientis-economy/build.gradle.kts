@@ -18,6 +18,10 @@ dependencies {
     compileOnly("net.milkbowl.vault:VaultAPI:${property("vaultVersion")}")
     testImplementation("net.milkbowl.vault:VaultAPI:${property("vaultVersion")}")
     
+    // Jackson for JSON processing
+    implementation("com.fasterxml.jackson.core:jackson-databind:2.16.1")
+    implementation("com.fasterxml.jackson.core:jackson-annotations:2.16.1")
+    
     // Testing dependencies are inherited from parent
 }
 

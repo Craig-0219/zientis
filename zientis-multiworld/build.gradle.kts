@@ -21,6 +21,10 @@ dependencies {
     implementation("com.zaxxer:HikariCP:${property("hikariVersion")}")
     implementation("org.mariadb.jdbc:mariadb-java-client:${property("mariadbVersion")}")
     
+    // Jackson for JSON processing
+    implementation("com.fasterxml.jackson.core:jackson-databind:2.16.1")
+    implementation("com.fasterxml.jackson.core:jackson-annotations:2.16.1")
+    
     // Testing dependencies are inherited from parent
 }
 
