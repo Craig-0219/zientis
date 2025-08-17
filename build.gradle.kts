@@ -27,9 +27,6 @@ allprojects {
         options.encoding = "UTF-8"
     }
 
-    tasks.withType<Test> {
-        useJUnitPlatform()
-    }
 }
 
 subprojects {
@@ -49,6 +46,10 @@ subprojects {
     ext.set("mariadbVersion", rootProject.extra["mariadbVersion"])
     ext.set("redisVersion", rootProject.extra["redisVersion"])
     ext.set("hikariVersion", rootProject.extra["hikariVersion"])
+
+    tasks.withType<Test> {
+        useJUnitPlatform()
+    }
 
     dependencies {
         // Testing
