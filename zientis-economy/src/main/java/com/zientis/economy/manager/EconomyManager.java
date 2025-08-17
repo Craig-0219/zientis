@@ -16,8 +16,8 @@ import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 /**
- * Core implementation of the Zientis Economy System
- * Handles all economy operations with thread safety and persistence
+ * 賽恩堤斯經濟系統的核心實現
+ * 處理所有經濟操作，具備線程安全性和持久化功能
  */
 public class EconomyManager implements ZientisEconomyAPI {
     
@@ -25,12 +25,12 @@ public class EconomyManager implements ZientisEconomyAPI {
     private final Logger logger;
     private final ExecutorService executorService;
     
-    // In-memory cache for accounts (will be backed by database)
+    // 帳戶的記憶體快取（將由資料庫支持）
     private final Map<UUID, EconomyAccount> accountCache;
     private final Map<UUID, Transaction> transactionCache;
     private final List<Transaction> transactionHistory;
     
-    // Configuration
+    // 配置設定
     private static final BigDecimal DEFAULT_STARTING_BALANCE = BigDecimal.valueOf(100.0);
     private static final int MAX_CACHED_TRANSACTIONS = 10000;
     
@@ -474,7 +474,7 @@ public class EconomyManager implements ZientisEconomyAPI {
     }
     
     /**
-     * Calculate total circulation
+     * 計算總流通量
      */
     private BigDecimal calculateTotalCirculation() {
         return accountCache.values().stream()
@@ -483,7 +483,7 @@ public class EconomyManager implements ZientisEconomyAPI {
     }
     
     /**
-     * Shutdown the economy manager
+     * 關閉經濟管理器
      */
     public void shutdown() {
         logger.info("Shutting down EconomyManager...");

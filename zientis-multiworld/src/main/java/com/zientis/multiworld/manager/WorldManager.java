@@ -21,8 +21,8 @@ import java.util.ArrayList;
 import java.util.logging.Logger;
 
 /**
- * Core implementation of the Multi-World API
- * Handles world creation, loading, unloading and lifecycle management
+ * 多世界API的核心實現
+ * 處理世界創建、載入、卸載和生命週期管理
  */
 public class WorldManager implements ZientisMultiWorldAPI {
     
