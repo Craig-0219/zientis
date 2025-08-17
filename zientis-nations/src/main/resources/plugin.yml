@@ -1,0 +1,82 @@
+name: ZientisNations
+version: ${project.version}
+main: com.zientis.nations.ZientisNationsPlugin
+api-version: 1.20
+
+description: Nation and war management system for Zientis Server
+author: Zientis Development Team
+website: https://github.com/craig900219/zientis
+
+depend: []
+softdepend: [ZientisCore, ZientisEconomy, ZientisMultiWorld]
+loadbefore: []
+
+commands:
+  nation:
+    description: Nation management commands
+    usage: /nation <subcommand> [args...]
+    permission: zientis.nations.use
+    aliases: [n, nat]
+  
+  war:
+    description: War management commands  
+    usage: /war <subcommand> [args...]
+    permission: zientis.nations.war
+    aliases: [battle]
+    
+  nations:
+    description: List all nations
+    usage: /nations [page]
+    permission: zientis.nations.list
+    aliases: [nationlist]
+
+permissions:
+  zientis.nations.*:
+    description: All nations permissions
+    default: op
+    children:
+      zientis.nations.use: true
+      zientis.nations.create: true
+      zientis.nations.join: true
+      zientis.nations.leave: true
+      zientis.nations.invite: true
+      zientis.nations.kick: true
+      zientis.nations.war: true
+      zientis.nations.admin: true
+      zientis.nations.list: true
+  
+  zientis.nations.use:
+    description: Basic nation commands
+    default: true
+  
+  zientis.nations.create:
+    description: Create a new nation
+    default: true
+  
+  zientis.nations.join:
+    description: Join a nation
+    default: true
+  
+  zientis.nations.leave:
+    description: Leave your current nation
+    default: true
+  
+  zientis.nations.invite:
+    description: Invite players to your nation
+    default: true
+  
+  zientis.nations.kick:
+    description: Kick members from your nation (leaders only)
+    default: true
+  
+  zientis.nations.war:
+    description: Declare and manage wars
+    default: true
+  
+  zientis.nations.list:
+    description: List all nations
+    default: true
+  
+  zientis.nations.admin:
+    description: Administrative nations commands
+    default: op

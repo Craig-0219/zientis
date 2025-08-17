@@ -1,0 +1,74 @@
+name: ZientisSocial
+version: ${project.version}
+main: com.zientis.social.ZientisSocialPlugin
+api-version: 1.20
+
+description: Social features and player interaction system for Zientis Server
+author: Zientis Development Team
+website: https://github.com/craig900219/zientis
+
+depend: []
+softdepend: [ZientisCore, ZientisEconomy]
+loadbefore: []
+
+commands:
+  friend:
+    description: Friend management commands
+    usage: /friend <add|remove|list|accept|deny> [player]
+    permission: zientis.social.friend
+    aliases: [f, friends]
+  
+  party:
+    description: Party management commands
+    usage: /party <create|invite|join|leave|kick|list>
+    permission: zientis.social.party
+    aliases: [p, team]
+    
+  msg:
+    description: Send private message to a player
+    usage: /msg <player> <message>
+    permission: zientis.social.msg
+    aliases: [tell, whisper, w]
+    
+  reply:
+    description: Reply to the last private message
+    usage: /reply <message>
+    permission: zientis.social.msg
+    aliases: [r]
+    
+  chat:
+    description: Change chat channel
+    usage: /chat <global|local|party|nation> [message]
+    permission: zientis.social.chat
+    aliases: [ch]
+
+permissions:
+  zientis.social.*:
+    description: All social permissions
+    default: op
+    children:
+      zientis.social.friend: true
+      zientis.social.party: true
+      zientis.social.msg: true
+      zientis.social.chat: true
+      zientis.social.admin: true
+  
+  zientis.social.friend:
+    description: Use friend system
+    default: true
+  
+  zientis.social.party:
+    description: Use party system
+    default: true
+  
+  zientis.social.msg:
+    description: Send private messages
+    default: true
+  
+  zientis.social.chat:
+    description: Use different chat channels
+    default: true
+  
+  zientis.social.admin:
+    description: Administrative social commands
+    default: op

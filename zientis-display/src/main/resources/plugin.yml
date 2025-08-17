@@ -2,7 +2,7 @@ name: ZientisDisplay
 version: ${project.version}
 main: com.zientis.display.ZientisDisplayPlugin
 api-version: 1.20
-author: Craig
+author: Zientis Development Team
 description: Zientis Island Display System - 3D Miniature Island Display System
 
 depend:
