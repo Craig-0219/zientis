@@ -1,0 +1,77 @@
+# Zientis 開發環境配置
+# 此檔案包含開發環境的所有配置設定
+
+# 資料庫配置
+database:
+  host: localhost
+  port: 3306
+  database: zientis_development
+  username: zientis_dev
+  password: dev_password_2024
+  pool:
+    minimum_idle: 5
+    maximum_pool_size: 20
+    connection_timeout: 30000
+    idle_timeout: 600000
+    max_lifetime: 1800000
+
+# Redis 配置
+redis:
+  host: localhost
+  port: 6379
+  password: ""
+  database: 0
+  pool:
+    max_total: 20
+    max_idle: 10
+    min_idle: 5
+
+# 經濟系統配置
+economy:
+  starting_balance: 100.0
+  max_transfer_amount: 1000000.0
+  transaction_history_limit: 10000
+  backup_interval: 300 # 5分鐘
+  currency_symbol: "鑽石"
+  currency_format: "%.2f %s"
+
+# 多世界系統配置
+multiworld:
+  max_islands_per_player: 1
+  world_load_timeout: 30000
+  auto_unload_delay: 600000 # 10分鐘
+  backup_interval: 1800 # 30分鐘
+  memory_threshold: 0.8 # 80%
+  default_world_type: "SKYBLOCK"
+  
+# 島嶼展示系統配置
+display:
+  render_distance: 100
+  update_interval: 5000 # 5秒
+  max_displays: 200
+  scale_ratio: 8 # 1:8縮放
+  chunk_load_radius: 3
+  
+# 國家系統配置
+nations:
+  founding_cost: 10000.0
+  max_members_base: 10
+  max_members_per_level: 5
+  treasury_tax_rate: 0.05 # 5%
+  war_declaration_cost: 5000.0
+  
+# Discord 整合配置
+discord:
+  bot_token: "YOUR_BOT_TOKEN_HERE"
+  guild_id: "YOUR_GUILD_ID_HERE"
+  enabled: false
+  webhook_url: "https://discord.com/api/webhooks/..."
+  command_prefix: "!"
+  
+# 開發模式設定
+development:
+  debug_mode: true
+  verbose_logging: true
+  auto_save_interval: 60000 # 1分鐘
+  performance_monitoring: true
+  test_data_enabled: true
