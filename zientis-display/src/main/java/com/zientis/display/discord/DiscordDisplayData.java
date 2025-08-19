@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.UUID;
 
 /**
@@ -252,7 +253,7 @@ public class DiscordDisplayData {
         }
         
         if (lastUpdated.isBefore(LocalDateTime.now().minusDays(30))) {
-            long days = java.time.ChronoUnit.DAYS.between(lastUpdated.toLocalDate(), java.time.LocalDate.now());
+            long days = ChronoUnit.DAYS.between(lastUpdated.toLocalDate(), java.time.LocalDate.now());
             msg.append("已 ").append(days).append(" 天未更新；");
         }
         

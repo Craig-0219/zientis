@@ -20,6 +20,10 @@ dependencies {
     // NBT API for advanced block handling
     compileOnly("de.tr7zw:item-nbt-api:2.12.2")
     
+    // Jackson for JSON processing
+    implementation("com.fasterxml.jackson.core:jackson-databind:2.16.1")
+    implementation("com.fasterxml.jackson.core:jackson-annotations:2.16.1")
+    
     // Testing dependencies
     testImplementation("com.github.seeseemelk:MockBukkit-v1.20:3.9.0")
 }
