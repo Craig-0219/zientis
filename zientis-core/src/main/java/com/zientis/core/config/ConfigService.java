@@ -52,6 +52,10 @@ public class ConfigService extends AbstractService {
         ZientisConfig databaseConfig = configManager.loadConfig("database");
         moduleConfigs.put("database", databaseConfig);
         
+        // 載入Discord配置
+        ZientisConfig discordConfig = configManager.loadConfig("discord");
+        moduleConfigs.put("discord", discordConfig);
+        
         // 建立預設配置檔案（如果不存在）
         createDefaultConfigs();
     }
@@ -100,6 +104,34 @@ database:
     max-lifetime: 1800000
 """;
         configManager.createDefaultConfig("database", databaseConfigContent);
+        
+        // Discord整合配置
+        String discordConfigContent = """
+# Zientis Discord整合配置檔案
+discord:
+  enabled: false
+  bot-api-endpoint: "http://localhost:8080/api/v1"
+  api-key: ""
+  webhook-url: ""
+  server-key: ""
+  
+  connection:
+    timeout: 30000
+    read-timeout: 60000
+    max-retries: 3
+    retry-delay: 1000
+  
+  sync:
+    economy: true
+    achievements: true
+    player-data: true
+    interval: 300
+  
+  security:
+    enable-encryption: true
+    encryption-algorithm: "AES"
+""";
+        configManager.createDefaultConfig("discord", discordConfigContent);
     }
     
     /**

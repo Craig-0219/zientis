@@ -4,6 +4,8 @@ import com.zientis.core.config.ConfigService;
 import com.zientis.core.config.ZientisConfig;
 import com.zientis.core.database.DatabaseConfig;
 import com.zientis.core.database.DatabaseManager;
+import com.zientis.core.discord.DiscordConfig;
+import com.zientis.core.discord.DiscordIntegrationService;
 import com.zientis.core.injection.DependencyContainer;
 import com.zientis.core.service.ServiceManager;
 import com.zientis.core.service.ServiceRegistry;
@@ -25,6 +27,7 @@ public class ZientisCore {
     private ServiceManager serviceManager;
     private ConfigService configService;
     private DatabaseManager databaseManager;
+    private DiscordIntegrationService discordService;
     private DependencyContainer dependencyContainer;
     
     private boolean initialized = false;
@@ -84,10 +87,17 @@ public class ZientisCore {
                 throw new RuntimeException("資料庫初始化失敗");
             }
             
-            // 5. 註冊核心服務到容器
+            // 5. 初始化Discord整合服務
+            ZientisConfig discordConfig = configService.getModuleConfig("discord");
+            DiscordConfig discordCfg = discordConfig.getDiscordConfig("discord");
+            
+            discordService = new DiscordIntegrationService(plugin, discordCfg);
+            serviceManager.registerAndStartService(discordService).join();
+            
+            // 6. 註冊核心服務到容器
             registerCoreServices();
             
-            // 6. 設置關閉掛鉤
+            // 7. 設置關閉掛鉤
             setupShutdownHook();
             
             initialized = true;
@@ -111,12 +121,14 @@ public class ZientisCore {
         dependencyContainer.registerSingleton(ServiceManager.class, serviceManager);
         dependencyContainer.registerSingleton(ConfigService.class, configService);
         dependencyContainer.registerSingleton(DatabaseManager.class, databaseManager);
+        dependencyContainer.registerSingleton(DiscordIntegrationService.class, discordService);
         dependencyContainer.registerSingleton(DependencyContainer.class, dependencyContainer);
         
         // 註冊命名實例
         dependencyContainer.registerNamed("serviceManager", serviceManager);
         dependencyContainer.registerNamed("configService", configService);
         dependencyContainer.registerNamed("databaseManager", databaseManager);
+        dependencyContainer.registerNamed("discordService", discordService);
         
         logger.info("核心服務註冊完成");
     }
@@ -153,6 +165,14 @@ public class ZientisCore {
     public DatabaseManager getDatabaseManager() {
         ensureInitialized();
         return databaseManager;
+    }
+    
+    /**
+     * 獲取Discord整合服務
+     */
+    public DiscordIntegrationService getDiscordService() {
+        ensureInitialized();
+        return discordService;
     }
     
     /**

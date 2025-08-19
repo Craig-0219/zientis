@@ -1,6 +1,7 @@
 package com.zientis.core.config;
 
 import com.zientis.core.database.DatabaseConfig;
+import com.zientis.core.discord.DiscordConfig;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.YamlConfiguration;
 
@@ -165,5 +166,76 @@ public class ZientisConfig implements ConfigSection {
         set(sectionPath + ".pool.connection-timeout", dbConfig.getConnectionTimeout());
         set(sectionPath + ".pool.idle-timeout", dbConfig.getIdleTimeout());
         set(sectionPath + ".pool.max-lifetime", dbConfig.getMaxLifetime());
+    }
+    
+    /**
+     * 從配置建立Discord配置
+     */
+    public DiscordConfig getDiscordConfig(String sectionPath) {
+        ConfigSection discordSection = getSection(sectionPath);
+        if (discordSection == null) {
+            return new DiscordConfig();
+        }
+        
+        DiscordConfig discordConfig = new DiscordConfig();
+        discordConfig.setBotApiEndpoint(discordSection.getString("bot-api-endpoint", "http://localhost:8080/api/v1"))
+                .setApiKey(discordSection.getString("api-key", ""))
+                .setWebhookUrl(discordSection.getString("webhook-url", ""))
+                .setServerKey(discordSection.getString("server-key", ""))
+                .setEnabled(discordSection.getBoolean("enabled", false));
+        
+        // 連接設定
+        ConfigSection connectionSection = discordSection.getSection("connection");
+        if (connectionSection != null) {
+            discordConfig.setConnectionTimeout(connectionSection.getInt("timeout", 30000))
+                    .setReadTimeout(connectionSection.getInt("read-timeout", 60000))
+                    .setMaxRetries(connectionSection.getInt("max-retries", 3))
+                    .setRetryDelay(connectionSection.getLong("retry-delay", 1000));
+        }
+        
+        // 同步設定
+        ConfigSection syncSection = discordSection.getSection("sync");
+        if (syncSection != null) {
+            discordConfig.setEconomySync(syncSection.getBoolean("economy", true))
+                    .setAchievementSync(syncSection.getBoolean("achievements", true))
+                    .setPlayerDataSync(syncSection.getBoolean("player-data", true))
+                    .setSyncInterval(syncSection.getInt("interval", 300));
+        }
+        
+        // 安全設定
+        ConfigSection securitySection = discordSection.getSection("security");
+        if (securitySection != null) {
+            discordConfig.setEnableEncryption(securitySection.getBoolean("enable-encryption", true))
+                    .setEncryptionAlgorithm(securitySection.getString("encryption-algorithm", "AES"));
+        }
+        
+        return discordConfig;
+    }
+    
+    /**
+     * 設定Discord配置到配置檔案
+     */
+    public void setDiscordConfig(String sectionPath, DiscordConfig discordConfig) {
+        set(sectionPath + ".enabled", discordConfig.isEnabled());
+        set(sectionPath + ".bot-api-endpoint", discordConfig.getBotApiEndpoint());
+        set(sectionPath + ".api-key", discordConfig.getApiKey());
+        set(sectionPath + ".webhook-url", discordConfig.getWebhookUrl());
+        set(sectionPath + ".server-key", discordConfig.getServerKey());
+        
+        // 連接設定
+        set(sectionPath + ".connection.timeout", discordConfig.getConnectionTimeout());
+        set(sectionPath + ".connection.read-timeout", discordConfig.getReadTimeout());
+        set(sectionPath + ".connection.max-retries", discordConfig.getMaxRetries());
+        set(sectionPath + ".connection.retry-delay", discordConfig.getRetryDelay());
+        
+        // 同步設定
+        set(sectionPath + ".sync.economy", discordConfig.isEconomySync());
+        set(sectionPath + ".sync.achievements", discordConfig.isAchievementSync());
+        set(sectionPath + ".sync.player-data", discordConfig.isPlayerDataSync());
+        set(sectionPath + ".sync.interval", discordConfig.getSyncInterval());
+        
+        // 安全設定
+        set(sectionPath + ".security.enable-encryption", discordConfig.isEnableEncryption());
+        set(sectionPath + ".security.encryption-algorithm", discordConfig.getEncryptionAlgorithm());
     }
 }

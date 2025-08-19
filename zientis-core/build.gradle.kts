@@ -15,6 +15,10 @@ dependencies {
     api("redis.clients:jedis:${property("redisVersion")}")
     api("com.zaxxer:HikariCP:${property("hikariVersion")}")
     
+    // Jackson for JSON processing (Discord API)
+    api("com.fasterxml.jackson.core:jackson-databind:2.16.1")
+    api("com.fasterxml.jackson.core:jackson-annotations:2.16.1")
+    
     // Testing dependencies are inherited from parent
 }
 
