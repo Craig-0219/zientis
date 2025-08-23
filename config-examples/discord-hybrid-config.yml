@@ -1,0 +1,136 @@
+# Zientis Discord混合整合配置示例
+# 支援Bot Token直接串接 + 經濟API串接
+
+# API服務器設定
+api:
+  port: 8080
+  host: "0.0.0.0"
+
+# Discord混合整合設定
+discord:
+  enabled: true
+  
+  # ===== 連接模式設定 =====
+  # 選項: BOT_TOKEN_ONLY, ECONOMY_API_ONLY, HYBRID (推薦)
+  connection_mode: "HYBRID"
+  
+  # ===== Bot Token直接串接設定 =====
+  # 用於DiscordSRV風格功能：聊天同步、狀態嵌入、事件通知
+  bot_token: "你的Discord Bot Token"                    # 從Discord Developer Portal獲取
+  guild_id: "你的Discord伺服器ID"                       # Discord伺服器ID
+  use_direct_api: true                                  # 啟用直接Discord API
+  
+  # ===== 經濟API串接設定 =====
+  # 用於跨平台經濟數據同步和Webhook功能
+  bot_api_endpoint: "http://localhost:8080/api/v1"      # 經濟Bot API端點
+  api_key: "你的經濟API金鑰"                            # 經濟API認證金鑰
+  use_economy_api: true                                 # 啟用經濟API
+  
+  # ===== 伺服器資訊設定 =====
+  server_name: "Zientis伺服器"
+  server_description: "一個很棒的Minecraft伺服器"
+  server_icon: "https://example.com/server-icon.png"   # 可選
+  server_address: "play.example.com"                   # 可選
+  
+  # ===== DiscordSRV風格功能設定 =====
+  
+  # 聊天同步
+  chat_sync: true
+  discord_to_minecraft: true
+  minecraft_to_discord: true
+  
+  # 伺服器狀態功能
+  server_status_embed: true                            # 伺服器狀態嵌入訊息
+  player_list_sync: true                               # 玩家列表同步
+  update_channel_topic: true                           # 更新頻道話題
+  status_update_interval: 60                           # 狀態更新間隔（秒）
+  
+  # 事件訊息
+  join_leave_messages: true                            # 玩家進出訊息
+  death_messages: true                                 # 死亡訊息
+  achievement_messages: true                           # 成就訊息
+  server_start_stop_messages: true                     # 伺服器啟停訊息
+  console_relay: false                                 # 控制台轉發（謹慎啟用）
+  
+  # ===== Discord頻道ID設定 =====
+  # 從Discord頻道右鍵 → 複製ID 獲取
+  chat_channel_id: "1234567890123456789"               # 聊天頻道ID
+  status_channel_id: "1234567890123456789"             # 狀態顯示頻道ID
+  log_channel_id: "1234567890123456789"                # 事件日誌頻道ID
+  console_channel_id: "1234567890123456789"            # 控制台頻道ID（可選）
+  
+  # ===== Webhook設定 =====
+  # 用於美觀的聊天顯示（顯示玩家頭像）
+  chat_webhook_url: "https://discord.com/api/webhooks/..." # 聊天Webhook URL
+  status_webhook_url: ""                               # 狀態Webhook URL（可選）
+  log_webhook_url: ""                                  # 日誌Webhook URL（可選）
+  
+  # ===== 訊息格式設定 =====
+  max_message_length: 2000                            # Discord訊息長度限制
+  allow_mentions: false                               # 是否允許@提及
+  message_prefix: ""                                  # 訊息前綴
+  message_suffix: ""                                  # 訊息後綴
+  
+  # ===== 權限設定 =====
+  allow_discord_commands: true                        # 允許Discord指令
+  admin_role_id: "1234567890123456789"                # 管理員角色ID
+  moderator_role_id: "1234567890123456789"            # 版主角色ID
+  
+  # ===== 過濾設定 =====
+  filter_profanity: false                            # 髒話過濾
+  blocked_words: []                                   # 被封鎖的詞彙列表
+  ignore_bots: true                                   # 忽略其他機器人
+  
+  # ===== 經濟同步設定 =====
+  economy_sync: true                                  # 經濟數據同步
+  achievement_sync: true                              # 成就數據同步
+  player_data_sync: true                              # 玩家數據同步
+  sync_interval: 300                                  # 同步間隔（秒）
+  
+  # ===== 安全設定 =====
+  server_key: "你的伺服器安全金鑰"                      # 伺服器認證金鑰
+  enable_encryption: true                             # 啟用加密傳輸
+  encryption_algorithm: "AES"                         # 加密算法
+  
+  # ===== 連接設定 =====
+  connection_timeout: 30000                          # 連接超時（毫秒）
+  read_timeout: 60000                                # 讀取超時（毫秒）
+  max_retries: 3                                     # 最大重試次數
+  retry_delay: 1000                                  # 重試延遲（毫秒）
+
+# 資料庫設定
+database:
+  host: "localhost"
+  port: 3306
+  username: "zientis"
+  password: "你的資料庫密碼"
+  database: "zientis_server"
+  pool_size: 10
+  
+# 偵錯設定
+debug: false
+
+# 日誌設定
+logging:
+  level: "INFO"
+  file: "logs/zientis.log"
+
+# ===== 設定說明 =====
+# 
+# 混合模式 (HYBRID) 建議設定：
+# 1. DiscordSRV功能 → 使用Bot Token直接串接
+#    - 聊天同步、狀態嵌入、事件通知
+#    - 即時性更好，功能更完整
+# 
+# 2. 經濟系統 → 使用經濟API串接  
+#    - 跨平台經濟數據同步
+#    - Webhook美觀顯示
+#    - 複雜業務邏輯處理
+#
+# 3. 設定步驟：
+#    a. 在Discord Developer Portal創建Bot
+#    b. 獲取Bot Token和Guild ID
+#    c. 邀請Bot到Discord伺服器
+#    d. 給予Bot必要權限：發送訊息、管理頻道、嵌入連結
+#    e. 複製頻道ID到配置檔案
+#    f. 配置經濟API端點（如果需要）

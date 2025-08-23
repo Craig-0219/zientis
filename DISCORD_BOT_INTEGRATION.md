@@ -1,8 +1,17 @@
-# Discord Bot API 整合架構設計
+# Discord Bot 整合架構設計
 
 ## 概覽
 
-為賽恩堤斯服務器設計統一的Discord Bot API整合系統，讓玩家可以通過Discord與服務器互動。
+為Zientis服務器設計統一的Discord Bot整合系統，支援**混合架構**：
+- **Bot Token直接串接** - DiscordSRV風格功能（聊天、狀態、事件）
+- **經濟API串接** - 跨平台經濟數據同步和複雜業務邏輯
+
+## 🎯 最新更新（2024年）
+
+✅ **混合架構完成** - 同時支援Bot Token和經濟API連接  
+✅ **DiscordSRV風格實作** - 完整的伺服器同步功能  
+✅ **直接Discord API** - 原生Discord REST API整合  
+✅ **智能回退機制** - 多重連接保證服務不中斷
 
 ## 整體架構
 

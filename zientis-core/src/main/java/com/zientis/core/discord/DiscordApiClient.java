@@ -274,6 +274,165 @@ public class DiscordApiClient {
     }
     
     /**
+     * 發送遊戲事件到Discord Bot
+     */
+    public CompletableFuture<Boolean> sendGameEvent(String eventType, Map<String, Object> eventData) {
+        Map<String, Object> payload = new HashMap<>();
+        payload.put("event_type", eventType);
+        payload.put("event_data", eventData);
+        payload.put("timestamp", System.currentTimeMillis());
+        
+        return post("/game-events", payload)
+                .thenApply(response -> {
+                    boolean success = response.has("success") && 
+                        response.get("success").asBoolean();
+                    
+                    if (success) {
+                        logger.info("遊戲事件發送成功: " + eventType);
+                    } else {
+                        logger.warning("遊戲事件發送失敗: " + eventType);
+                    }
+                    
+                    return success;
+                })
+                .exceptionally(throwable -> {
+                    logger.severe("發送遊戲事件API調用失敗: " + throwable.getMessage());
+                    return Boolean.FALSE;
+                });
+    }
+    
+    // =============== DiscordSRV風格的新方法 ===============
+    
+    /**
+     * 發送訊息到Discord頻道
+     */
+    public CompletableFuture<JsonNode> sendChannelMessage(String channelId, Map<String, Object> messageData) {
+        return post("/discord/channels/" + channelId + "/messages", messageData)
+                .exceptionally(throwable -> {
+                    logger.severe("發送頻道訊息失敗: " + throwable.getMessage());
+                    return objectMapper.createObjectNode();
+                });
+    }
+    
+    /**
+     * 編輯Discord頻道訊息
+     */
+    public CompletableFuture<JsonNode> editChannelMessage(String channelId, String messageId, Map<String, Object> messageData) {
+        return put("/discord/channels/" + channelId + "/messages/" + messageId, messageData)
+                .exceptionally(throwable -> {
+                    logger.severe("編輯頻道訊息失敗: " + throwable.getMessage());
+                    return objectMapper.createObjectNode();
+                });
+    }
+    
+    /**
+     * 發送Webhook訊息
+     */
+    public CompletableFuture<JsonNode> sendWebhookMessage(String webhookUrl, Map<String, Object> messageData) {
+        Map<String, Object> payload = new HashMap<>();
+        payload.put("webhook_url", webhookUrl);
+        payload.put("message_data", messageData);
+        
+        return post("/discord/webhook/send", payload)
+                .exceptionally(throwable -> {
+                    logger.severe("發送Webhook訊息失敗: " + throwable.getMessage());
+                    return objectMapper.createObjectNode();
+                });
+    }
+    
+    /**
+     * 更新頻道話題
+     */
+    public CompletableFuture<Boolean> updateChannelTopic(String channelId, String topic) {
+        Map<String, Object> data = new HashMap<>();
+        data.put("topic", topic);
+        
+        return put("/discord/channels/" + channelId + "/topic", data)
+                .thenApply(response -> {
+                    boolean success = response.has("success") && 
+                        response.get("success").asBoolean();
+                    return success;
+                })
+                .exceptionally(throwable -> {
+                    logger.severe("更新頻道話題失敗: " + throwable.getMessage());
+                    return Boolean.FALSE;
+                });
+    }
+    
+    /**
+     * 獲取頻道資訊
+     */
+    public CompletableFuture<JsonNode> getChannelInfo(String channelId) {
+        return get("/discord/channels/" + channelId)
+                .exceptionally(throwable -> {
+                    logger.severe("獲取頻道資訊失敗: " + throwable.getMessage());
+                    return objectMapper.createObjectNode();
+                });
+    }
+    
+    /**
+     * 獲取Discord伺服器資訊
+     */
+    public CompletableFuture<JsonNode> getGuildInfo(String guildId) {
+        return get("/discord/guilds/" + guildId)
+                .exceptionally(throwable -> {
+                    logger.severe("獲取伺服器資訊失敗: " + throwable.getMessage());
+                    return objectMapper.createObjectNode();
+                });
+    }
+    
+    /**
+     * 發送私人訊息
+     */
+    public CompletableFuture<JsonNode> sendDirectMessage(String userId, Map<String, Object> messageData) {
+        Map<String, Object> payload = new HashMap<>();
+        payload.put("user_id", userId);
+        payload.put("message_data", messageData);
+        
+        return post("/discord/users/" + userId + "/dm", payload)
+                .exceptionally(throwable -> {
+                    logger.severe("發送私人訊息失敗: " + throwable.getMessage());
+                    return objectMapper.createObjectNode();
+                });
+    }
+    
+    /**
+     * 批次發送訊息到多個頻道
+     */
+    public CompletableFuture<Boolean> sendToMultipleChannels(String[] channelIds, Map<String, Object> messageData) {
+        Map<String, Object> payload = new HashMap<>();
+        payload.put("channel_ids", channelIds);
+        payload.put("message_data", messageData);
+        
+        return post("/discord/channels/broadcast", payload)
+                .thenApply(response -> {
+                    boolean success = response.has("success") && 
+                        response.get("success").asBoolean();
+                    return success;
+                })
+                .exceptionally(throwable -> {
+                    logger.severe("批次發送訊息失敗: " + throwable.getMessage());
+                    return Boolean.FALSE;
+                });
+    }
+    
+    /**
+     * 發送伺服器狀態更新
+     */
+    public CompletableFuture<Boolean> updateServerStatus(Map<String, Object> statusData) {
+        return post("/discord/server-status", statusData)
+                .thenApply(response -> {
+                    boolean success = response.has("success") && 
+                        response.get("success").asBoolean();
+                    return success;
+                })
+                .exceptionally(throwable -> {
+                    logger.severe("更新伺服器狀態失敗: " + throwable.getMessage());
+                    return Boolean.FALSE;
+                });
+    }
+
+    /**
      * 關閉客戶端
      */
     public void shutdown() {

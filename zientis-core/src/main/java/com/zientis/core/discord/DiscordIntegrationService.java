@@ -14,12 +14,14 @@ import java.util.concurrent.TimeUnit;
 /**
  * Discord整合服務
  * 管理與Discord Bot的所有互動和資料同步
+ * 包含DiscordSRV風格的伺服器同步功能
  */
 public class DiscordIntegrationService extends AbstractService {
     
     private DiscordApiClient apiClient;
     private ScheduledExecutorService scheduler;
     private DiscordConfig discordConfig;
+    private DiscordSRVService discordSRVService;
     
     public DiscordIntegrationService(Plugin plugin, DiscordConfig config) {
         super(plugin, "DiscordIntegrationService", "1.0.0");
@@ -48,11 +50,29 @@ public class DiscordIntegrationService extends AbstractService {
             startSyncTasks();
         }
         
+        // 初始化DiscordSRV服務
+        if (discordConfig.isChatSync() || discordConfig.isServerStatusEmbed() || 
+            discordConfig.isJoinLeaveMessages()) {
+            discordSRVService = new DiscordSRVService(plugin, discordConfig, apiClient);
+            discordSRVService.initialize();
+            logger.info("DiscordSRV風格服務已啟動");
+        }
+        
         logger.info("Discord整合服務初始化完成");
     }
     
     @Override
     protected void onShutdown() throws Exception {
+        // 關閉DiscordSRV服務
+        if (discordSRVService != null) {
+            try {
+                discordSRVService.shutdown();
+                logger.info("DiscordSRV風格服務已關閉");
+            } catch (Exception e) {
+                logger.warning("關閉DiscordSRV服務時發生錯誤: " + e.getMessage());
+            }
+        }
+        
         if (scheduler != null && !scheduler.isShutdown()) {
             scheduler.shutdown();
             try {
@@ -239,6 +259,41 @@ public class DiscordIntegrationService extends AbstractService {
      */
     public DiscordConfig getConfig() {
         return discordConfig;
+    }
+    
+    /**
+     * 獲取DiscordSRV服務實例
+     */
+    public DiscordSRVService getDiscordSRVService() {
+        return discordSRVService;
+    }
+    
+    /**
+     * 從Discord發送訊息到Minecraft
+     * 提供給外部系統調用的接口
+     */
+    public void sendDiscordMessageToMinecraft(String username, String message, String channelName) {
+        if (discordSRVService != null) {
+            discordSRVService.sendDiscordMessageToMinecraft(username, message, channelName);
+        }
+    }
+    
+    /**
+     * 手動觸發伺服器狀態更新
+     */
+    public void updateServerStatus() {
+        if (discordSRVService != null) {
+            discordSRVService.forceUpdateServerStatus();
+        }
+    }
+    
+    /**
+     * 發送自定義嵌入訊息到Discord頻道
+     */
+    public void sendCustomEmbed(String channelId, Map<String, Object> embed) {
+        if (discordSRVService != null) {
+            discordSRVService.sendCustomEmbed(channelId, embed);
+        }
     }
     
     @Override

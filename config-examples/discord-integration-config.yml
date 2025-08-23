@@ -1,0 +1,45 @@
+# Zientis Discord整合配置示例
+
+# API服務器設定
+api:
+  port: 8080
+  host: "0.0.0.0"
+
+# Discord整合設定
+discord:
+  enabled: true
+  bot_api_endpoint: "http://localhost:8080/api/v1"  # Discord Bot API端點
+  api_key: "your-discord-bot-api-key"               # API認證金鑰
+  server_key: "your-minecraft-server-key"           # 伺服器認證金鑰
+  sync_interval: 300                                # 同步間隔（秒）
+  connection_timeout: 30000                         # 連接超時（毫秒）
+  
+  # 經濟同步設定
+  economy_sync: true
+  achievement_sync: true
+  
+  # 事件推送設定
+  events:
+    player_join: true
+    player_leave: true
+    economy_transaction: true
+    achievement_unlock: true
+    server_start: true
+    server_stop: true
+
+# 資料庫設定
+database:
+  host: "localhost"
+  port: 3306
+  username: "zientis"
+  password: "your-database-password"
+  database: "zientis_server"
+  pool_size: 10
+  
+# 偵錯設定
+debug: false
+
+# 日誌設定
+logging:
+  level: "INFO"
+  file: "logs/zientis.log"
