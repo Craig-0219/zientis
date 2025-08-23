@@ -1,6 +1,7 @@
 plugins {
     `java-library`
     `maven-publish`
+    id("com.github.johnrengelman.shadow")
 }
 
 description = "Core API and data models for Zientis Server"
@@ -23,6 +24,11 @@ dependencies {
 }
 
 tasks {
+    shadowJar {
+        archiveClassifier.set("")
+        archiveFileName.set("${project.name}-${project.version}.jar")
+    }
+    
     jar {
         archiveClassifier.set("")
         archiveFileName.set("${project.name}-${project.version}.jar")
@@ -34,6 +40,10 @@ tasks {
             expand(project.properties)
         }
     }
+}
+
+artifacts {
+    archives(tasks.jar)
 }
 
 publishing {

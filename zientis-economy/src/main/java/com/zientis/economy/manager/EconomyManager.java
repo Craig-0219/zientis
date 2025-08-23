@@ -3,6 +3,12 @@ package com.zientis.economy.manager;
 import com.zientis.economy.api.ZientisEconomyAPI;
 import com.zientis.economy.data.EconomyAccount;
 import com.zientis.economy.data.Transaction;
+import com.zientis.economy.util.JsonBuilder;
+import com.zientis.core.discord.DiscordIntegrationService;
+import com.zientis.core.discord.model.GameEvent;
+import com.zientis.core.discord.model.CrossPlatformUser;
+import org.bukkit.Bukkit;
+import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
 
 import java.math.BigDecimal;
@@ -24,6 +30,10 @@ public class EconomyManager implements ZientisEconomyAPI {
     private final Plugin plugin;
     private final Logger logger;
     private final ExecutorService executorService;
+    private DiscordIntegrationService discordIntegrationService;
+    
+    // 寶石系統
+    private final Map<UUID, BigDecimal> gemsCache;
     
     // 帳戶的記憶體快取（將由資料庫支持）
     private final Map<UUID, EconomyAccount> accountCache;
@@ -41,8 +51,17 @@ public class EconomyManager implements ZientisEconomyAPI {
         this.accountCache = new ConcurrentHashMap<>();
         this.transactionCache = new ConcurrentHashMap<>();
         this.transactionHistory = Collections.synchronizedList(new ArrayList<>());
+        this.gemsCache = new ConcurrentHashMap<>();
         
         logger.info("EconomyManager initialized");
+    }
+    
+    /**
+     * 設定Discord整合服務
+     */
+    public void setDiscordIntegrationService(DiscordIntegrationService discordIntegrationService) {
+        this.discordIntegrationService = discordIntegrationService;
+        logger.info("Discord整合服務已設定");
     }
     
     @Override
@@ -126,6 +145,21 @@ public class EconomyManager implements ZientisEconomyAPI {
                 
                 recordTransaction(transaction);
                 logger.info("Deposited " + amount + " to player " + playerId);
+                
+                // 發送Discord事件
+                if (discordIntegrationService != null && discordIntegrationService.isRunning()) {
+                    Player player = Bukkit.getPlayer(playerId);
+                    if (player != null) {
+                        GameEvent event = GameEvent.economyTransaction(
+                            player.getName(), playerId.toString(), "earned", 
+                            amount.intValue(), "coins");
+                        discordIntegrationService.sendGameEvent(
+                            event.getEventType().getCode(), 
+                            event.toApiFormat()
+                        );
+                    }
+                }
+                
                 return transaction;
             });
         });
@@ -159,6 +193,21 @@ public class EconomyManager implements ZientisEconomyAPI {
                 
                 recordTransaction(transaction);
                 logger.info("Withdrew " + amount + " from player " + playerId);
+                
+                // 發送Discord事件
+                if (discordIntegrationService != null && discordIntegrationService.isRunning()) {
+                    Player player = Bukkit.getPlayer(playerId);
+                    if (player != null) {
+                        GameEvent event = GameEvent.economyTransaction(
+                            player.getName(), playerId.toString(), "spent", 
+                            amount.intValue(), "coins");
+                        discordIntegrationService.sendGameEvent(
+                            event.getEventType().getCode(), 
+                            event.toApiFormat()
+                        );
+                    }
+                }
+                
                 return transaction;
             });
         });
@@ -204,6 +253,24 @@ public class EconomyManager implements ZientisEconomyAPI {
                 
                 recordTransaction(transaction);
                 logger.info("Transferred " + amount + " from " + fromPlayer + " to " + toPlayer);
+                
+                // 發送Discord事件
+                if (discordIntegrationService != null && discordIntegrationService.isRunning()) {
+                    Player fromPlayerEntity = Bukkit.getPlayer(fromPlayer);
+                    Player toPlayerEntity = Bukkit.getPlayer(toPlayer);
+                    
+                    if (fromPlayerEntity != null && toPlayerEntity != null) {
+                        GameEvent event = GameEvent.economyTransaction(
+                            fromPlayerEntity.getName(), fromPlayer.toString(), "transfer_to", 
+                            amount.intValue(), "coins");
+                        event.addData("recipient", toPlayerEntity.getName());
+                        discordIntegrationService.sendGameEvent(
+                            event.getEventType().getCode(), 
+                            event.toApiFormat()
+                        );
+                    }
+                }
+                
                 return transaction;
             });
         });
@@ -371,33 +438,138 @@ public class EconomyManager implements ZientisEconomyAPI {
         }
     }
     
+    /**
+     * 獲取玩家寶石餘額
+     */
+    public CompletableFuture<BigDecimal> getGems(UUID playerId) {
+        return CompletableFuture.supplyAsync(() -> {
+            return gemsCache.getOrDefault(playerId, BigDecimal.ZERO);
+        }, executorService);
+    }
+    
+    /**
+     * 設定玩家寶石餘額
+     */
+    public CompletableFuture<Boolean> setGems(UUID playerId, BigDecimal amount) {
+        return CompletableFuture.supplyAsync(() -> {
+            gemsCache.put(playerId, amount);
+            return true;
+        }, executorService);
+    }
+    
+    /**
+     * 添加玩家寶石
+     */
+    public CompletableFuture<Boolean> addGems(UUID playerId, BigDecimal amount) {
+        return CompletableFuture.supplyAsync(() -> {
+            BigDecimal current = gemsCache.getOrDefault(playerId, BigDecimal.ZERO);
+            gemsCache.put(playerId, current.add(amount));
+            
+            // 發送Discord事件
+            if (discordIntegrationService != null && discordIntegrationService.isRunning()) {
+                Player player = Bukkit.getPlayer(playerId);
+                if (player != null) {
+                    GameEvent event = GameEvent.economyTransaction(
+                        player.getName(), playerId.toString(), "earned", 
+                        amount.intValue(), "gems");
+                    discordIntegrationService.sendGameEvent(
+                        event.getEventType().getCode(), 
+                        event.toApiFormat()
+                    );
+                }
+            }
+            
+            return true;
+        }, executorService);
+    }
+    
+    /**
+     * 同步玩家經濟數據到Discord
+     */
+    public CompletableFuture<Boolean> syncToDiscord(UUID playerId) {
+        return CompletableFuture.supplyAsync(() -> {
+            try {
+                if (discordIntegrationService == null || !discordIntegrationService.isRunning()) {
+                    return false;
+                }
+                
+                Player player = Bukkit.getPlayer(playerId);
+                if (player == null) {
+                    return false;
+                }
+                
+                EconomyAccount account = accountCache.get(playerId);
+                if (account == null) {
+                    return false;
+                }
+                
+                // 建立跨平台用戶數據
+                CrossPlatformUser user = new CrossPlatformUser(
+                    null, // Discord ID需要從綁定數據獲取
+                    playerId,
+                    player.getName()
+                );
+                
+                user.setTotalCoins(account.getBalance().intValue());
+                user.setTotalGems(gemsCache.getOrDefault(playerId, BigDecimal.ZERO).intValue());
+                user.setTotalExperience(player.getTotalExperience());
+                user.setLevel(player.getLevel());
+                
+                Map<String, Object> economyData = user.getEconomyData();
+                return discordIntegrationService.syncPlayerEconomyData(playerId, economyData).join();
+                
+            } catch (Exception e) {
+                logger.severe("同步玩家經濟數據到Discord失敗: " + e.getMessage());
+                return false;
+            }
+        }, executorService);
+    }
+
     @Override
     public CompletableFuture<String> getDiscordEconomyStats() {
         return CompletableFuture.supplyAsync(() -> {
             try {
-                StringBuilder stats = new StringBuilder();
-                stats.append("📊 **經濟系統統計**\n\n");
-                
-                // Basic stats
-                stats.append("💰 總流通量: ").append(calculateTotalCirculation()).append(" 鑽石\n");
-                stats.append("👥 總帳戶數: ").append(accountCache.size()).append("\n");
-                stats.append("📈 總交易次數: ").append(transactionHistory.size()).append("\n");
-                
-                // Average balance
-                if (!accountCache.isEmpty()) {
-                    BigDecimal totalBalance = accountCache.values().stream()
-                        .map(EconomyAccount::getBalance)
-                        .reduce(BigDecimal.ZERO, BigDecimal::add);
-                    BigDecimal avgBalance = totalBalance.divide(BigDecimal.valueOf(accountCache.size()), 2, java.math.RoundingMode.HALF_UP);
-                    stats.append("💎 平均餘額: ").append(avgBalance).append(" 鑽石\n");
+                // 使用Discord整合服務獲取統計
+                if (discordIntegrationService != null && discordIntegrationService.isRunning()) {
+                    Map<String, Object> stats = new HashMap<>();
+                    
+                    // 獲取所有玩家數據並計算統計
+                    int totalPlayers = 0;
+                    double totalCoins = 0;
+                    double totalGems = 0;
+                    
+                    for (Player player : Bukkit.getOnlinePlayers()) {
+                        totalPlayers++;
+                        totalCoins += getBalance(player.getUniqueId()).join().doubleValue();
+                        totalGems += getGems(player.getUniqueId()).join().doubleValue();
+                    }
+                    
+                    stats.put("total_players", totalPlayers);
+                    stats.put("total_coins", totalCoins);
+                    stats.put("total_gems", totalGems);
+                    stats.put("average_coins", totalPlayers > 0 ? totalCoins / totalPlayers : 0);
+                    stats.put("status", "active");
+                    stats.put("discord_integration_enabled", true);
+                    stats.put("timestamp", System.currentTimeMillis());
+                    
+                    return JsonBuilder.create()
+                            .put("success", true)
+                            .put("data", stats)
+                            .build();
+                } else {
+                    return JsonBuilder.create()
+                            .put("success", false)
+                            .put("error", "Discord整合服務未啟用")
+                            .build();
                 }
-                
-                return stats.toString();
             } catch (Exception e) {
-                logger.severe("Failed to generate Discord economy stats: " + e.getMessage());
-                return "❌ 無法獲取經濟統計資料";
+                plugin.getLogger().severe("獲取Discord經濟統計失敗: " + e.getMessage());
+                return JsonBuilder.create()
+                        .put("success", false)
+                        .put("error", e.getMessage())
+                        .build();
             }
-        }, executorService);
+        });
     }
     
     @Override

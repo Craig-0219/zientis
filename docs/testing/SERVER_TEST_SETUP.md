@@ -12,7 +12,7 @@
   - 時間戳記更新機制
 
 #### 2. 架構完整性檢查
-- **模組結構**: ✅ Maven多模組專案正確建立
+- **模組結構**: ✅ Gradle多模組專案正確建立
 - **依賴關係**: ✅ 模組間依賴正確配置
 - **配置文件**: ✅ plugin.yml和config.yml完整
 
@@ -53,16 +53,16 @@ java -Xmx2G -Xms1G -jar paper-1.20.6-147.jar nogui
 #### 2. 編譯插件
 ```bash
 # 在專案根目錄執行
-mvn clean package -DskipTests
+./gradlew build
 
 # 編譯成功後，插件JAR位於:
-# - zientis-multiworld/target/Zientis MultiWorld-0.1.0-ALPHA.jar
+# - zientis-multiworld/build/libs/zientis-multiworld-0.1.0-ALPHA.jar
 ```
 
 #### 3. 安裝插件
 ```bash
 # 複製編譯好的插件到伺服器
-cp zientis-multiworld/target/*.jar minecraft-server/plugins/
+cp zientis-multiworld/build/libs/*.jar minecraft-server/plugins/
 
 # 重啟伺服器載入插件
 ```
@@ -226,10 +226,10 @@ java -Xmx4G -Xms2G \
 
 🎯 **下一步**: 可進行遊戲內功能測試或部署到正式環境
 
-## 📋 最新測試摘要 (2024-08-14)
+## 📋 最新測試摘要 (2025-08-23)
 
 ### 成功完成項目：
-1. ✅ Maven 多模組專案編譯
+1. ✅ Gradle 多模組專案編譯
 2. ✅ Paper 1.20.6-147 伺服器設置
 3. ✅ Zientis MultiWorld 插件部署
 4. ✅ 伺服器穩定啟動 (56秒啟動時間)

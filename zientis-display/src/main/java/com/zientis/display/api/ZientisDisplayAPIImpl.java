@@ -462,4 +462,124 @@ public class ZientisDisplayAPIImpl implements ZientisDisplayAPI {
     private DisplayModel performForceRefresh(UUID islandId, DisplayModel existingModel) {
         return performFullRebuild(islandId, existingModel);
     }
+    
+    // ============ Discord Bot API 實現 ============
+    
+    @Override
+    public CompletableFuture<com.zientis.display.discord.DiscordDisplayData> getDiscordDisplayData(UUID islandId) {
+        return CompletableFuture.supplyAsync(() -> {
+            try {
+                DisplayModel model = displayModels.get(islandId);
+                if (model == null) {
+                    return null;
+                }
+                
+                // 創建Discord展示數據
+                // TODO: 實現DiscordDisplayData類
+                logger.info("獲取展示Discord數據: " + islandId);
+                return null; // 暫時返回null，需要實現DiscordDisplayData類
+                
+            } catch (Exception e) {
+                logger.severe("獲取Discord展示數據失敗: " + e.getMessage());
+                return null;
+            }
+        });
+    }
+    
+    @Override
+    public CompletableFuture<com.zientis.display.discord.DiscordDisplayData> getDiscordDisplayDataByDiscordUser(String discordUserId) {
+        return CompletableFuture.supplyAsync(() -> {
+            try {
+                // TODO: 實現Discord用戶到島嶼的映射
+                logger.info("根據Discord用戶獲取展示數據: " + discordUserId);
+                return null; // 暫時返回null
+                
+            } catch (Exception e) {
+                logger.severe("根據Discord用戶獲取展示數據失敗: " + e.getMessage());
+                return null;
+            }
+        });
+    }
+    
+    @Override
+    public CompletableFuture<List<com.zientis.display.discord.DiscordDisplayData>> getDiscordDisplayRanking(String criteria, int limit) {
+        return CompletableFuture.supplyAsync(() -> {
+            try {
+                // TODO: 實現排行榜邏輯
+                logger.info("獲取Discord展示排行榜: " + criteria + ", 限制: " + limit);
+                return new ArrayList<>(); // 暫時返回空列表
+                
+            } catch (Exception e) {
+                logger.severe("獲取Discord展示排行榜失敗: " + e.getMessage());
+                return new ArrayList<>();
+            }
+        });
+    }
+    
+    @Override
+    public CompletableFuture<List<com.zientis.display.discord.DiscordDisplayData>> getDiscordDisplaysNeedingAttention() {
+        return CompletableFuture.supplyAsync(() -> {
+            try {
+                // TODO: 實現需要關注的展示邏輯
+                logger.info("獲取需要關注的展示");
+                return new ArrayList<>(); // 暫時返回空列表
+                
+            } catch (Exception e) {
+                logger.severe("獲取需要關注的展示失敗: " + e.getMessage());
+                return new ArrayList<>();
+            }
+        });
+    }
+    
+    @Override
+    public CompletableFuture<String> handleDiscordDisplayCommand(String command, String[] args, String discordUserId) {
+        return CompletableFuture.supplyAsync(() -> {
+            try {
+                // TODO: 實現Discord指令處理
+                logger.info("處理Discord展示指令: " + command + " 來自用戶: " + discordUserId);
+                return "✅ 指令執行完成";
+                
+            } catch (Exception e) {
+                logger.severe("處理Discord展示指令失敗: " + e.getMessage());
+                return "❌ 指令執行失敗: " + e.getMessage();
+            }
+        });
+    }
+    
+    @Override
+    public CompletableFuture<Boolean> sendDiscordDisplayNotification(String eventType, UUID islandId, String message) {
+        return CompletableFuture.supplyAsync(() -> {
+            try {
+                // TODO: 實現Discord通知
+                logger.info("發送Discord展示通知: " + eventType + " 島嶼: " + islandId + " 訊息: " + message);
+                return true;
+                
+            } catch (Exception e) {
+                logger.severe("發送Discord展示通知失敗: " + e.getMessage());
+                return false;
+            }
+        });
+    }
+    
+    @Override
+    public CompletableFuture<String> getDiscordDisplayStats() {
+        return CompletableFuture.supplyAsync(() -> {
+            try {
+                DisplaySystemStats stats = getSystemStats();
+                
+                StringBuilder result = new StringBuilder();
+                result.append("📊 **展示系統統計**\n\n");
+                result.append("🏗️ 總展示數: ").append(stats.getTotalDisplays()).append("\n");
+                result.append("✅ 活躍展示: ").append(stats.getActiveDisplays()).append("\n");
+                result.append("💾 記憶體使用: ").append(stats.getMemoryUsage() / 1024 / 1024).append(" MB\n");
+                result.append("⏱️ 平均更新時間: ").append(String.format("%.2f", stats.getAverageUpdateTime())).append(" ms\n");
+                
+                return result.toString();
+                
+            } catch (Exception e) {
+                logger.severe("獲取Discord展示統計失敗: " + e.getMessage());
+                return "❌ 無法獲取展示統計資料";
+            }
+        });
+    }
 }

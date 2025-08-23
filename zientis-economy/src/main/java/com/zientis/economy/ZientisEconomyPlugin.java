@@ -1,11 +1,13 @@
 package com.zientis.economy;
 
 import com.zientis.core.api.ZientisAPI;
+import com.zientis.core.discord.DiscordIntegrationService;
 import com.zientis.economy.api.ZientisEconomyAPI;
 import com.zientis.economy.commands.EconomyCommand;
 import com.zientis.economy.commands.BalanceCommand;
 import com.zientis.economy.commands.PayCommand;
 import com.zientis.economy.listeners.EconomyEventListener;
+import com.zientis.economy.listener.EconomyDiscordListener;
 import com.zientis.economy.manager.EconomyManager;
 import com.zientis.economy.vault.ZientisVaultEconomy;
 import net.milkbowl.vault.economy.Economy;
@@ -21,6 +23,8 @@ public class ZientisEconomyPlugin extends JavaPlugin {
     
     private EconomyManager economyManager;
     private ZientisVaultEconomy vaultEconomy;
+    private EconomyDiscordListener discordListener;
+    private DiscordIntegrationService discordIntegrationService;
     
     @Override
     public void onLoad() {
@@ -52,6 +56,9 @@ public class ZientisEconomyPlugin extends JavaPlugin {
             
             // Register with ZientisAPI if available
             registerWithZientisAPI();
+            
+            // Setup Discord integration
+            setupDiscordIntegration();
             
             getLogger().info("Zientis Economy System enabled successfully!");
             
@@ -146,6 +153,10 @@ public class ZientisEconomyPlugin extends JavaPlugin {
             EconomyEventListener listener = new EconomyEventListener(economyManager);
             getServer().getPluginManager().registerEvents(listener, this);
             
+            // 註冊Discord監聽器
+            discordListener = new EconomyDiscordListener(this, economyManager);
+            getServer().getPluginManager().registerEvents(discordListener, this);
+            
             getLogger().info("Event listeners registered successfully!");
             
         } catch (Exception e) {
@@ -191,10 +202,67 @@ public class ZientisEconomyPlugin extends JavaPlugin {
     }
     
     /**
+     * 設定Discord整合
+     */
+    private void setupDiscordIntegration() {
+        try {
+            // 嘗試從ZientisAPI獲取Discord整合服務
+            RegisteredServiceProvider<DiscordIntegrationService> rsp = 
+                getServer().getServicesManager().getRegistration(DiscordIntegrationService.class);
+            
+            if (rsp != null) {
+                discordIntegrationService = rsp.getProvider();
+                
+                // 設定經濟管理器的Discord整合
+                economyManager.setDiscordIntegrationService(discordIntegrationService);
+                
+                // 設定Discord監聽器的整合服務
+                if (discordListener != null) {
+                    discordListener.setDiscordIntegrationService(discordIntegrationService);
+                }
+                
+                getLogger().info("Discord整合已啟用！");
+            } else {
+                getLogger().info("Discord整合服務未找到 - 經濟系統將獨立運行");
+            }
+            
+        } catch (Exception e) {
+            getLogger().warning("設定Discord整合失敗: " + e.getMessage());
+        }
+    }
+    
+    /**
+     * 手動觸發所有在線玩家的Discord同步
+     */
+    public void syncAllPlayersToDiscord() {
+        if (discordListener != null) {
+            discordListener.syncAllOnlinePlayersToDiscord().thenAccept(count -> {
+                getLogger().info("已同步 " + count + " 個玩家的經濟數據到Discord");
+            });
+        }
+    }
+    
+    /**
      * Check if Vault integration is enabled
      * @return True if Vault is integrated
      */
     public boolean isVaultEnabled() {
         return vaultEconomy != null;
+    }
+    
+    /**
+     * Check if Discord integration is enabled
+     * @return True if Discord is integrated
+     */
+    public boolean isDiscordEnabled() {
+        return discordIntegrationService != null;
+    }
+    
+    /**
+     * Get the Discord integration service
+     * @return Discord integration service or null if not available
+     */
+    public DiscordIntegrationService getDiscordIntegrationService() {
+        return discordIntegrationService;
     }
 }

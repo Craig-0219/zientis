@@ -214,7 +214,10 @@ Zientis 是一個模組化的 Minecraft 插件系統，提供經濟、多世界�
 ```bash
 ./gradlew build          # 建構所有模組
 ./gradlew test           # 執行所有測試
-./gradlew publishToMavenLocal  # 發佈到本地倉庫
+./gradlew clean build    # 清理並重新建構
+./gradlew jar            # 編譯並產生 JAR 文件
+./gradlew shadowJar      # 產生包含依賴的 JAR (如果有配置)
+./gradlew publishToMavenLocal  # 發佈到本地 Gradle 快取
 ```
 
 ## 測試架構

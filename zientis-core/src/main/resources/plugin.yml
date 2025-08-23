@@ -1,0 +1,47 @@
+name: ZientisCore
+version: "${version}"
+main: com.zientis.core.ZientisCorePlugin
+api-version: "1.20"
+load: STARTUP
+authors: ["Zientis Development Team"]
+description: "Zientis伺服器核心系統 - 提供統一的核心功能與Discord整合"
+website: "https://zientis.com"
+
+# 軟依賴（可選）
+softdepend: []
+
+# 硬依賴（必需）
+depend: []
+
+# 加載順序 - 核心系統應該最先載入
+loadbefore: 
+  - ZientisEconomy
+  - ZientisNations
+  - ZientisMultiWorld
+  - ZientisDisplay
+
+# 配置選項
+permissions:
+  zientis.core.admin:
+    description: "Zientis核心系統管理權限"
+    default: op
+  zientis.core.api:
+    description: "Zientis API存取權限"
+    default: op
+  zientis.discord.admin:
+    description: "Discord整合管理權限" 
+    default: op
+
+# 命令
+commands:
+  zcore:
+    description: "Zientis核心系統管理命令"
+    usage: "/zcore <status|reload|debug>"
+    permission: zientis.core.admin
+    aliases: ["zientiscore", "core"]
+  
+  zdiscord:
+    description: "Discord整合管理命令"
+    usage: "/zdiscord <status|sync|test>"
+    permission: zientis.discord.admin
+    aliases: ["discord"]
