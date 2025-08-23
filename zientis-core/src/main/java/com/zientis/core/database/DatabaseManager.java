@@ -34,6 +34,11 @@ public class DatabaseManager {
             try {
                 logger.info("正在初始化資料庫連接池...");
                 
+                // 臨時跳過數據庫初始化以測試插件載入
+                logger.warning("暫時跳過資料庫初始化 - 僅供測試使用");
+                return true;
+                
+                /*
                 HikariConfig hikariConfig = new HikariConfig();
                 
                 // 基本連接設定
@@ -73,6 +78,7 @@ public class DatabaseManager {
                     logger.info("資料庫連接池初始化成功！");
                     return true;
                 }
+                */
                 
             } catch (Exception e) {
                 logger.severe("資料庫連接池初始化失敗: " + e.getMessage());
