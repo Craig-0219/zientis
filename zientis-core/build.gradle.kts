@@ -11,14 +11,15 @@ dependencies {
     compileOnly("io.papermc.paper:paper-api:${property("paperVersion")}")
     testImplementation("io.papermc.paper:paper-api:${property("paperVersion")}")
     
-    // Database
-    api("org.mariadb.jdbc:mariadb-java-client:${property("mariadbVersion")}")
-    api("redis.clients:jedis:${property("redisVersion")}")
-    api("com.zaxxer:HikariCP:${property("hikariVersion")}")
+    // Database - use implementation to include in JAR
+    implementation("org.mariadb.jdbc:mariadb-java-client:${property("mariadbVersion")}")
+    implementation("redis.clients:jedis:${property("redisVersion")}")
+    implementation("com.zaxxer:HikariCP:${property("hikariVersion")}")
     
-    // Jackson for JSON processing (Discord API)
-    api("com.fasterxml.jackson.core:jackson-databind:2.16.1")
-    api("com.fasterxml.jackson.core:jackson-annotations:2.16.1")
+    // Jackson for JSON processing (Discord API) - use implementation
+    implementation("com.fasterxml.jackson.core:jackson-databind:2.16.1")
+    implementation("com.fasterxml.jackson.core:jackson-annotations:2.16.1")
+    implementation("com.fasterxml.jackson.core:jackson-core:2.16.1")
     
     // Testing dependencies are inherited from parent
 }
@@ -27,6 +28,9 @@ tasks {
     shadowJar {
         archiveClassifier.set("")
         archiveFileName.set("${project.name}-${project.version}.jar")
+        
+        // 簡化配置，暫時不使用relocate避免ASM問題
+        mergeServiceFiles()
     }
     
     jar {
@@ -40,10 +44,15 @@ tasks {
             expand(project.properties)
         }
     }
+    
+    // 確保build任務使用shadowJar
+    build {
+        dependsOn(shadowJar)
+    }
 }
 
 artifacts {
-    archives(tasks.jar)
+    archives(tasks.shadowJar)
 }
 
 publishing {
