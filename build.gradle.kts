@@ -5,7 +5,7 @@ plugins {
 }
 
 group = "com.zientis"
-version = "0.1.0-ALPHA"
+version = "0.2.0-BETA"
 description = "Revolutionary Minecraft Skyblock MMO Server"
 
 java {

@@ -1,5 +1,8 @@
 package com.zientis.core.discord;
 
+import java.util.HashMap;
+import java.util.Map;
+
 /**
  * Discord整合配置類
  * 支援混合架構：Bot Token直接串接 + 經濟API串接
@@ -90,6 +93,9 @@ public class DiscordConfig {
     private boolean filterProfanity = false;
     private String[] blockedWords = new String[0];
     private boolean ignoreBots = true;
+    
+    // 語音頻道狀態更新設定
+    private Map<String, Object> voiceChannelConfig = new HashMap<>();
     
     public DiscordConfig() {}
     
@@ -397,6 +403,21 @@ public class DiscordConfig {
     public boolean isEconomyApiEnabled() {
         return enabled && (connectionMode == ConnectionMode.ECONOMY_API_ONLY || connectionMode == ConnectionMode.HYBRID)
                && !botApiEndpoint.isEmpty() && !apiKey.isEmpty();
+    }
+    
+    /**
+     * 獲取語音頻道配置
+     */
+    public Map<String, Object> getVoiceChannelConfig() {
+        return voiceChannelConfig;
+    }
+    
+    /**
+     * 設定語音頻道配置
+     */
+    public DiscordConfig setVoiceChannelConfig(Map<String, Object> voiceChannelConfig) {
+        this.voiceChannelConfig = voiceChannelConfig != null ? voiceChannelConfig : new HashMap<>();
+        return this;
     }
 
     @Override
