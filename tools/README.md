@@ -76,6 +76,8 @@ kotlin -s ./build-runner.main.kts -w
 kotlin -s ./build-runner.main.kts -q -r core
 ```
 
+**Windows 用戶提示**: 在 Windows 上，您可以使用 `build.bat` 腳本來簡化命令。例如，`build.bat -a` 將執行 `kotlin -s build-runner.main.kts -a`。
+
 #### 部署管理
 ```bash
 # 查看部署狀態
