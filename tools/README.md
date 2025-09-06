@@ -15,7 +15,7 @@
 - 🎨 彩色輸出，清晰的進度顯示
 - 📋 詳細的編譯報告和錯誤處理
 
-### 2. 部署輔助工具 (`deploy-helper.sh`)
+### 2. 部署輔助工具 (`deploy-runner.main.kts`)
 專業級的 JAR 部署管理工具，提供完整的版本控制和回滾功能。
 
 **主要功能**:
@@ -84,13 +84,13 @@ kotlin -s ./build-runner.main.kts -q -r core
 #### 部署管理
 ```bash
 # 查看部署狀態
-./deploy-helper.sh status
+kotlin -s ./deploy-runner.main.kts status
 
 # 部署所有模組
-./deploy-helper.sh deploy-all
+kotlin -s ./deploy-runner.main.kts deploy-all
 
 # 回滾到上一版本
-./deploy-helper.sh rollback core
+kotlin -s ./deploy-runner.main.kts rollback core
 ```
 
 ## 📋 詳細使用指南
@@ -124,12 +124,12 @@ kotlin -s ./build-runner.main.kts -q -r core
 
 | 命令 | 說明 | 範例 |
 |------|------|------|
-| `deploy <module>` | 部署指定模組 | `./deploy-helper.sh deploy core` |
-| `deploy-all` | 部署所有模組 | `./deploy-helper.sh deploy-all` |
-| `rollback <module>` | 回滾模組 | `./deploy-helper.sh rollback core` |
-| `list-backups` | 列出備份 | `./deploy-helper.sh list-backups` |
-| `status` | 顯示部署狀態 | `./deploy-helper.sh status` |
-| `cleanup` | 清理部署檔案 | `./deploy-helper.sh cleanup` |
+| `deploy <module>` | 部署指定模組 | `kotlin -s ./deploy-runner.main.kts deploy core` |
+| `deploy-all` | 部署所有模組 | `kotlin -s ./deploy-runner.main.kts deploy-all` |
+| `rollback <module>` | 回滾模組 | `kotlin -s ./deploy-runner.main.kts rollback core` |
+| `list-backups` | 列出備份 | `kotlin -s ./deploy-runner.main.kts list-backups` |
+| `status` | 顯示部署狀態 | `kotlin -s ./deploy-runner.main.kts status` |
+| `cleanup` | 清理部署檔案 | `kotlin -s ./deploy-runner.main.kts cleanup` |
 
 ## 🔧 高級配置
 
@@ -195,13 +195,13 @@ SMTP_SERVER="smtp.gmail.com"
    kotlin -s ./build-runner.main.kts -v core
    
    # 檢查部署狀態
-   ./deploy-helper.sh status core
+   kotlin -s ./deploy-runner.main.kts status core
    ```
 
 5. **版本回滾**
    ```bash
    # 如果新版本有問題，快速回滾
-   ./deploy-helper.sh rollback core
+   kotlin -s ./deploy-runner.main.kts rollback core
    ```
 
 ### 團隊協作
@@ -236,10 +236,10 @@ kotlin -s ./build-runner.main.kts -c -f core
 ls -la minecraft-server/plugins/
 
 # 檢查伺服器狀態
-./deploy-helper.sh status
+kotlin -s ./deploy-runner.main.kts status
 
 # 手動部署
-./deploy-helper.sh deploy core -f
+kotlin -s ./deploy-runner.main.kts deploy core -f
 ```
 
 **3. 監控模式異常**
