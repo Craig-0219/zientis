@@ -56,6 +56,9 @@ kotlin -s ./build-runner.main.kts --help
 
 ### 基本使用
 
+**從專案根目錄使用 `run.bat` (推薦)**:
+為了方便，您可以在專案根目錄下直接執行 `run.bat` 來啟動自動編譯工具。例如，`run.bat -a` 將等同於 `tools\build.bat -a`。
+
 #### 編譯所有模組
 ```bash
 kotlin -s ./build-runner.main.kts -a
