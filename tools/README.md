@@ -4,7 +4,7 @@
 
 ## 🚀 工具清單
 
-### 1. 自動編譯工具 (`auto-build.sh`)
+### 1. 自動編譯工具 (`build-runner.main.kts`)
 智慧型 Gradle 編譯工具，支援多模組專案的自動化編譯與部署。
 
 **主要功能**:
@@ -42,7 +42,7 @@
 ```bash
 # 確保已安裝必要工具
 sudo apt update
-sudo apt install -y openjdk-21-jdk gradle git rsync
+sudo apt install -y openjdk-21-jdk gradle git rsync kotlin
 ```
 
 ### 初始化配置
@@ -51,29 +51,29 @@ sudo apt install -y openjdk-21-jdk gradle git rsync
 cd tools
 
 # 首次執行會自動創建配置檔案
-./auto-build.sh --help
+kotlin -s ./build-runner.main.kts --help
 ```
 
 ### 基本使用
 
 #### 編譯所有模組
 ```bash
-./auto-build.sh -a
+kotlin -s ./build-runner.main.kts -a
 ```
 
 #### 編譯特定模組
 ```bash
-./auto-build.sh core economy
+kotlin -s ./build-runner.main.kts core economy
 ```
 
 #### 監控模式（開發時推薦）
 ```bash
-./auto-build.sh -w
+kotlin -s ./build-runner.main.kts -w
 ```
 
 #### 快速編譯並重啟伺服器
 ```bash
-./auto-build.sh -q -r core
+kotlin -s ./build-runner.main.kts -q -r core
 ```
 
 #### 部署管理
@@ -94,14 +94,14 @@ cd tools
 
 | 選項 | 說明 | 範例 |
 |------|------|------|
-| `-a, --all` | 編譯所有模組 | `./auto-build.sh -a` |
-| `-c, --clean` | 編譯前先清理 | `./auto-build.sh -c core` |
-| `-w, --watch` | 監控模式 | `./auto-build.sh -w` |
-| `-q, --quick` | 快速模式（跳過測試） | `./auto-build.sh -q` |
-| `-r, --restart` | 編譯後重啟伺服器 | `./auto-build.sh -r` |
-| `-f, --force` | 強制重新編譯 | `./auto-build.sh -f` |
-| `-v, --verbose` | 詳細輸出 | `./auto-build.sh -v` |
-| `--dry-run` | 乾跑模式 | `./auto-build.sh --dry-run` |
+| `-a, --all` | 編譯所有模組 | `kotlin -s ./build-runner.main.kts -a` |
+| `-c, --clean` | 編譯前先清理 | `kotlin -s ./build-runner.main.kts -c core` |
+| `-w, --watch` | 監控模式 | `kotlin -s ./build-runner.main.kts -w` |
+| `-q, --quick` | 快速模式（跳過測試） | `kotlin -s ./build-runner.main.kts -q` |
+| `-r, --restart` | 編譯後重啟伺服器 | `kotlin -s ./build-runner.main.kts -r` |
+| `-f, --force` | 強制重新編譯 | `kotlin -s ./build-runner.main.kts -f` |
+| `-v, --verbose` | 詳細輸出 | `kotlin -s ./build-runner.main.kts -v` |
+| `--dry-run` | 乾跑模式 | `kotlin -s ./build-runner.main.kts --dry-run` |
 
 ### 模組別名
 
@@ -173,7 +173,7 @@ SMTP_SERVER="smtp.gmail.com"
 
 1. **啟動監控模式**
    ```bash
-   ./auto-build.sh -w
+   kotlin -s ./build-runner.main.kts -w
    ```
 
 2. **編輯程式碼**
@@ -187,7 +187,7 @@ SMTP_SERVER="smtp.gmail.com"
 4. **問題調試**
    ```bash
    # 詳細編譯輸出
-   ./auto-build.sh -v core
+   kotlin -s ./build-runner.main.kts -v core
    
    # 檢查部署狀態
    ./deploy-helper.sh status core
@@ -203,10 +203,10 @@ SMTP_SERVER="smtp.gmail.com"
 
 ```bash
 # 強制重新編譯所有模組（同步最新變更）
-./auto-build.sh -f -a
+kotlin -s ./build-runner.main.kts -f -a
 
 # 清理並重新編譯（解決依賴問題）
-./auto-build.sh -c -a
+kotlin -s ./build-runner.main.kts -c -a
 ```
 
 ## 🐛 故障排除
@@ -222,7 +222,7 @@ java -version
 gradle -version
 
 # 清理並重新編譯
-./auto-build.sh -c -f core
+kotlin -s ./build-runner.main.kts -c -f core
 ```
 
 **2. 部署失敗**
@@ -274,7 +274,7 @@ echo "WATCH_INTERVAL=5" >> build.conf
 
 如遇問題，請：
 
-1. 查看詳細日誌：`./auto-build.sh -v`
+1. 查看詳細日誌：`kotlin -s ./build-runner.main.kts -v`
 2. 檢查配置檔案：`cat build.conf`
 3. 確認依賴完整：`java -version && gradle -version`
 4. 提交 Issue 到專案儲存庫
