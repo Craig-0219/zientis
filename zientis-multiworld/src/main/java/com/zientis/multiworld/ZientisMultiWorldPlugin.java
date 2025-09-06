@@ -1,87 +1,71 @@
 package com.zientis.multiworld;
 
-import com.zientis.core.api.ZientisAPI;
+import com.zientis.core.injection.DependencyContainer;
+import com.zientis.core.service.ServiceRegistry;
 import com.zientis.multiworld.api.ZientisMultiWorldAPI;
 import com.zientis.multiworld.commands.IslandCommand;
 import com.zientis.multiworld.listeners.PlayerJoinListener;
 import com.zientis.multiworld.manager.WorldManager;
+import org.bukkit.plugin.ServicePriority;
 import org.bukkit.plugin.java.JavaPlugin;
 
-/**
- * Main plugin class for Zientis Multi-World System
- * Handles plugin lifecycle and core system initialization
- */
 public class ZientisMultiWorldPlugin extends JavaPlugin {
-    
-    private WorldManager worldManager;
-    private static ZientisMultiWorldAPI api;
-    
+
+    private WorldManager worldService;
+
     @Override
     public void onEnable() {
-        getLogger().info("Starting Zientis Multi-World System v" + getDescription().getVersion());
-        
-        // Initialize core API if not already done
-        if (!ZientisAPI.isInitialized()) {
-            ZientisAPI.initialize(this);
+        try {
+            // 1. Get Core Services from Bukkit
+            ServiceRegistry serviceRegistry = getServer().getServicesManager().getRegistration(ServiceRegistry.class).getProvider();
+            DependencyContainer dependencyContainer = getServer().getServicesManager().getRegistration(DependencyContainer.class).getProvider();
+
+            if (serviceRegistry == null || dependencyContainer == null) {
+                throw new IllegalStateException("ZientisCore is not loaded or failed to provide essential services.");
+            }
+
+            // 2. Create and Register our own service
+            this.worldService = new WorldManager(this);
+            
+            // Inject dependencies into our service
+            dependencyContainer.inject(this.worldService);
+
+            // Register with the central registry
+            serviceRegistry.registerService(this.worldService);
+            
+            // Also register our API implementation
+            serviceRegistry.registerImplementation(ZientisMultiWorldAPI.class, this.worldService);
+
+            // 3. Register commands and listeners
+            registerCommandsAndListeners(dependencyContainer);
+
+            getLogger().info("Zientis Multi-World System enabled using the new Service Architecture!");
+
+        } catch (Exception e) {
+            getLogger().severe("Failed to enable Zientis Multi-World System: " + e.getMessage());
+            e.printStackTrace();
+            getServer().getPluginManager().disablePlugin(this);
         }
-        
-        // Initialize world manager
-        worldManager = new WorldManager(this);
-        api = worldManager;
-        
-        // Register commands
-        registerCommands();
-        
-        // Register event listeners
-        registerListeners();
-        
-        // Save default configuration
-        saveDefaultConfig();
-        
-        getLogger().info("Zientis Multi-World System enabled successfully!");
-        getLogger().info("System ready to manage individual island worlds");
     }
-    
+
     @Override
     public void onDisable() {
-        getLogger().info("Shutting down Zientis Multi-World System...");
-        
-        if (worldManager != null) {
-            worldManager.shutdown();
-        }
-        
+        // The ServiceRegistry in ZientisCore will handle the shutdown of registered services.
         getLogger().info("Zientis Multi-World System disabled.");
     }
-    
-    /**
-     * Get the Multi-World API instance
-     * @return The API instance
-     */
-    public static ZientisMultiWorldAPI getAPI() {
-        return api;
-    }
-    
-    /**
-     * Get the World Manager instance
-     * @return The world manager
-     */
-    public WorldManager getWorldManager() {
-        return worldManager;
-    }
-    
-    private void registerCommands() {
-        // Register island command
-        IslandCommand islandCommand = new IslandCommand(worldManager);
+
+    private void registerCommandsAndListeners(DependencyContainer container) {
+        // Commands
+        IslandCommand islandCommand = new IslandCommand(worldService);
+        container.inject(islandCommand); // Inject dependencies into the command
         getCommand("island").setExecutor(islandCommand);
         getCommand("island").setTabCompleter(islandCommand);
-        
-        getLogger().info("Commands registered: /island");
-    }
-    
-    private void registerListeners() {
-        // Register player join listener for island management
-        getServer().getPluginManager().registerEvents(new PlayerJoinListener(worldManager), this);
-        
-        getLogger().info("Event listeners registered");
+
+        // Event Listeners
+        PlayerJoinListener playerJoinListener = new PlayerJoinListener(worldService);
+        container.inject(playerJoinListener); // Inject dependencies into the listener
+        getServer().getPluginManager().registerEvents(playerJoinListener, this);
+
+        getLogger().info("Commands and Event Listeners registered.");
     }
 }

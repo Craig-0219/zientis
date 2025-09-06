@@ -4,6 +4,7 @@ import com.zientis.display.api.ZientisDisplayAPI;
 import com.zientis.display.data.DisplayModel;
 import com.zientis.display.data.DisplayStatus;
 import com.zientis.display.data.DisplayUpdateType;
+
 import org.bukkit.scheduler.BukkitRunnable;
 
 import java.time.LocalDateTime;

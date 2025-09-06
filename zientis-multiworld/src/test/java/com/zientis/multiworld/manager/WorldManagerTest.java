@@ -1,6 +1,7 @@
 package com.zientis.multiworld.manager;
 
 import com.zientis.core.data.Island;
+import com.zientis.core.database.DatabaseManager;
 import com.zientis.multiworld.api.ZientisMultiWorldAPI;
 import org.bukkit.plugin.Plugin;
 import org.junit.jupiter.api.BeforeEach;
@@ -11,6 +12,7 @@ import org.mockito.MockitoAnnotations;
 
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -25,18 +27,30 @@ class WorldManagerTest {
     
     @Mock
     private Plugin mockPlugin;
+    @Mock
+    private DatabaseManager mockDatabaseManager;
     
     private WorldManager worldManager;
     private AutoCloseable mockitoCloseable;
     
     @BeforeEach
-    void setUp() {
+    void setUp() throws Exception {
         mockitoCloseable = MockitoAnnotations.openMocks(this);
         when(mockPlugin.getLogger()).thenReturn(java.util.logging.Logger.getLogger("Test"));
         
-        // Note: This creates a WorldManager instance for testing business logic
-        // Actual Bukkit world operations will be mocked or tested separately
         worldManager = new WorldManager(mockPlugin);
+
+        // Manually inject dependencies for testing
+        java.lang.reflect.Field schedulerField = WorldManager.class.getDeclaredField("scheduler");
+        schedulerField.setAccessible(true);
+        schedulerField.set(worldManager, Executors.newSingleThreadScheduledExecutor());
+
+        java.lang.reflect.Field dbManagerField = WorldManager.class.getDeclaredField("databaseManager");
+        dbManagerField.setAccessible(true);
+        dbManagerField.set(worldManager, mockDatabaseManager);
+
+        // Initialize the service
+        worldManager.initialize();
     }
     
     @Test

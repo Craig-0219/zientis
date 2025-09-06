@@ -1,7 +1,7 @@
 plugins {
     `java-library`
     `maven-publish`
-    id("com.github.johnrengelman.shadow")
+    id("com.gradleup.shadow")
 }
 
 description = "Nations and diplomacy system for Zientis Server"
@@ -9,6 +9,8 @@ description = "Nations and diplomacy system for Zientis Server"
 dependencies {
     // Core Module
     api(project(":zientis-core"))
+    api(project(":zientis-economy"))
+    api(project(":zientis-multiworld"))
     
     // Paper API
     compileOnly("io.papermc.paper:paper-api:${property("paperVersion")}")
