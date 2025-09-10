@@ -1,5 +1,7 @@
 package com.zientis.economy.manager;
 
+import com.zientis.core.database.DatabaseManager;
+import com.zientis.core.discord.DiscordIntegrationService;
 import com.zientis.economy.data.EconomyAccount;
 import com.zientis.economy.data.Transaction;
 import org.bukkit.plugin.Plugin;
@@ -24,17 +26,38 @@ class EconomyManagerTest {
     
     @Mock
     private Plugin mockPlugin;
+    @Mock
+    private DatabaseManager mockDatabaseManager;
+    @Mock
+    private DiscordIntegrationService mockDiscordService;
     
     private EconomyManager economyManager;
     private UUID testPlayerId;
     private AutoCloseable mockitoCloseable;
     
     @BeforeEach
-    void setUp() {
+    void setUp() throws Exception {
         mockitoCloseable = MockitoAnnotations.openMocks(this);
         when(mockPlugin.getLogger()).thenReturn(java.util.logging.Logger.getLogger("Test"));
         
         economyManager = new EconomyManager(mockPlugin);
+
+        // Manually inject dependencies for testing
+        java.lang.reflect.Field executorField = EconomyManager.class.getDeclaredField("executorService");
+        executorField.setAccessible(true);
+        executorField.set(economyManager, java.util.concurrent.Executors.newSingleThreadExecutor());
+
+        java.lang.reflect.Field dbManagerField = EconomyManager.class.getDeclaredField("databaseManager");
+        dbManagerField.setAccessible(true);
+        dbManagerField.set(economyManager, mockDatabaseManager);
+
+        java.lang.reflect.Field discordServiceField = EconomyManager.class.getDeclaredField("discordIntegrationService");
+        discordServiceField.setAccessible(true);
+        discordServiceField.set(economyManager, mockDiscordService);
+        
+        // Initialize the service
+        economyManager.initialize();
+        
         testPlayerId = UUID.randomUUID();
     }
     

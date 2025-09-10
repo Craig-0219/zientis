@@ -1,7 +1,7 @@
 plugins {
     `java-library`
     `maven-publish`
-    id("com.github.johnrengelman.shadow")
+    id("com.gradleup.shadow")
 }
 
 description = "Display and UI system for Zientis Server"

@@ -3,6 +3,7 @@ package com.zientis.display.commands;
 import com.zientis.display.api.ZientisDisplayAPI;
 import com.zientis.display.data.DisplayModel;
 import com.zientis.display.data.DisplayUpdateType;
+
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.command.Command;

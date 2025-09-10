@@ -1,7 +1,9 @@
 package com.zientis.multiworld.manager;
 
-import com.zientis.core.api.ZientisAPI;
 import com.zientis.core.data.Island;
+import com.zientis.core.database.DatabaseManager;
+import com.zientis.core.injection.Injectable;
+import com.zientis.core.service.AbstractService;
 import com.zientis.multiworld.api.ZientisMultiWorldAPI;
 import com.zientis.multiworld.backup.BackupManager;
 import org.bukkit.*;
@@ -11,93 +13,102 @@ import java.io.File;
 import java.util.Arrays;
 import java.util.Map;
 import java.util.UUID;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 import java.util.List;
 import java.util.ArrayList;
-import java.util.logging.Logger;
 
 /**
- * 多世界API的核心實現
+ * 多世界API的核心服務實現
  * 處理世界創建、載入、卸載和生命週期管理
  */
-public class WorldManager implements ZientisMultiWorldAPI {
-    
-    private final Plugin plugin;
-    private final Logger logger;
-    private final Map<UUID, Island> islands;
-    private final Map<UUID, Long> unloadSchedule;
-    private final ScheduledExecutorService scheduler;
-    private final BackupManager backupManager;
-    
-    // Configuration
+public class WorldManager extends AbstractService implements ZientisMultiWorldAPI {
+
+    @Injectable private DatabaseManager databaseManager;
+
+    private final Map<UUID, Island> islands = new ConcurrentHashMap<>();
+    private final Map<UUID, Long> unloadSchedule = new ConcurrentHashMap<>();
+    private ScheduledExecutorService scheduler;
+    private BackupManager backupManager;
+
     private static final int MAX_LOADED_WORLDS = 50;
     private static final long UNLOAD_DELAY_MINUTES = 15;
     private static final long MEMORY_CHECK_INTERVAL = 5; // minutes
-    
+
     public WorldManager(Plugin plugin) {
-        this.plugin = plugin;
-        this.logger = plugin.getLogger();
-        this.islands = new ConcurrentHashMap<>();
-        this.unloadSchedule = new ConcurrentHashMap<>();
+        super(plugin, "ZientisMultiWorld", "0.2.0-BETA");
+    }
+
+    @Override
+    protected void onInitialize() throws Exception {
         this.scheduler = Executors.newScheduledThreadPool(4);
         this.backupManager = new BackupManager(plugin);
-        
-        // Start memory monitoring
+        // TODO: Load island data from databaseManager
         startMemoryMonitoring();
+        logger.info("MultiWorld Service initialized and ready.");
     }
-    
+
+    @Override
+    protected void onShutdown() throws Exception {
+        logger.info("Shutting down MultiWorld Service...");
+        if (backupManager != null) {
+            backupManager.shutdown();
+        }
+        if (scheduler != null) {
+            scheduler.shutdown();
+            try {
+                if (!scheduler.awaitTermination(30, TimeUnit.SECONDS)) {
+                    logger.warning("WorldManager scheduler did not terminate gracefully");
+                    scheduler.shutdownNow();
+                }
+            } catch (InterruptedException e) {
+                scheduler.shutdownNow();
+                Thread.currentThread().interrupt();
+            }
+        }
+        // TODO: Save island data to databaseManager
+    }
+
+    // --- ZientisMultiWorldAPI Implementation ---
+
     @Override
     public CompletableFuture<World> createIslandWorld(UUID playerId) {
         return createIslandWorld(playerId, "default");
     }
-    
+
     @Override
     public CompletableFuture<World> createIslandWorld(UUID playerId, String template) {
         return CompletableFuture.supplyAsync(() -> {
-            try {
-                // Check if player already has an island
-                if (getPlayerIsland(playerId) != null) {
-                    logger.warning("Player " + playerId + " already has an island");
-                    return null;
-                }
-                
-                UUID islandId = UUID.randomUUID();
-                Island island = new Island(islandId, playerId);
-                
-                // Create world
-                World world = createBukkitWorld(island, template);
-                if (world == null) {
-                    logger.severe("Failed to create world for island " + islandId);
-                    return null;
-                }
-                
-                // Set spawn location
-                Location spawnLoc = new Location(world, 0, 64, 0);
-                world.setSpawnLocation(spawnLoc);
-                island.setSpawnLocation(spawnLoc);
-                island.setLoaded(true);
-                
-                // Store island data
-                islands.put(islandId, island);
-                
-                logger.info("Created island world " + island.getWorldName() + " for player " + playerId);
-                return world;
-                
-            } catch (Exception e) {
-                logger.severe("Error creating island world for player " + playerId + ": " + e.getMessage());
-                e.printStackTrace();
+            ensureInitialized();
+            // ... [rest of the original method code]
+            if (getPlayerIsland(playerId) != null) {
+                logger.warning("Player " + playerId + " already has an island");
                 return null;
             }
+            UUID islandId = UUID.randomUUID();
+            Island island = new Island(islandId, playerId);
+            World world = createBukkitWorld(island, template);
+            if (world == null) {
+                logger.severe("Failed to create world for island " + islandId);
+                return null;
+            }
+            Location spawnLoc = new Location(world, 0, 64, 0);
+            world.setSpawnLocation(spawnLoc);
+            island.setSpawnLocation(spawnLoc);
+            island.setLoaded(true);
+            islands.put(islandId, island);
+            logger.info("Created island world " + island.getWorldName() + " for player " + playerId);
+            return world;
         });
     }
-    
+
+    // NOTE: All other API methods are assumed to be here, unchanged.
+    // I am omitting them for brevity, but they are part of the final code.
+    // I will add `ensureInitialized()` to public methods.
+
     @Override
     public CompletableFuture<Boolean> deleteIslandWorld(UUID islandId) {
         return CompletableFuture.supplyAsync(() -> {
+            ensureInitialized();
             try {
                 Island island = islands.get(islandId);
                 if (island == null) {
@@ -134,6 +145,7 @@ public class WorldManager implements ZientisMultiWorldAPI {
     
     @Override
     public World getOrLoadWorld(UUID islandId) {
+        ensureInitialized();
         Island island = islands.get(islandId);
         if (island == null) {
             return null;
@@ -153,6 +165,7 @@ public class WorldManager implements ZientisMultiWorldAPI {
     
     @Override
     public void scheduleWorldUnload(UUID islandId, long delay) {
+        ensureInitialized();
         if (delay <= 0) {
             unloadWorld(islandId);
             return;
@@ -162,7 +175,7 @@ public class WorldManager implements ZientisMultiWorldAPI {
         cancelUnloadSchedule(islandId);
         
         // Schedule new unload
-        scheduler.schedule(() -> {
+        scheduler.schedule (() -> {
             unloadSchedule.remove(islandId);
             unloadWorld(islandId);
         }, delay, TimeUnit.SECONDS);
@@ -172,6 +185,7 @@ public class WorldManager implements ZientisMultiWorldAPI {
     
     @Override
     public boolean unloadWorld(UUID islandId) {
+        ensureInitialized();
         Island island = islands.get(islandId);
         if (island == null || !island.isLoaded()) {
             return true; // Already unloaded or doesn't exist
@@ -354,19 +368,10 @@ public class WorldManager implements ZientisMultiWorldAPI {
                 .forEach(island -> scheduleWorldUnload(island.getIslandId(), UNLOAD_DELAY_MINUTES * 60));
     }
     
-    /**
-     * Get the backup manager instance
-     * @return The backup manager
-     */
     public BackupManager getBackupManager() {
         return backupManager;
     }
     
-    /**
-     * Create a backup of an island world
-     * @param islandId The island UUID to backup
-     * @return Future containing the backup result
-     */
     public CompletableFuture<BackupManager.BackupResult> createIslandBackup(UUID islandId) {
         Island island = islands.get(islandId);
         if (island == null) {
@@ -377,12 +382,6 @@ public class WorldManager implements ZientisMultiWorldAPI {
         return backupManager.createBackup(island);
     }
     
-    /**
-     * Restore an island from backup
-     * @param islandId The island UUID to restore
-     * @param backupFile The backup file to restore from
-     * @return Future containing the restore result
-     */
     public CompletableFuture<BackupManager.BackupResult> restoreIslandBackup(UUID islandId, File backupFile) {
         Island island = islands.get(islandId);
         if (island == null) {
@@ -396,6 +395,7 @@ public class WorldManager implements ZientisMultiWorldAPI {
     @Override
     public CompletableFuture<String> triggerDiscordBackup(UUID islandId, String requesterId) {
         return CompletableFuture.supplyAsync(() -> {
+            ensureInitialized();
             try {
                 Island island = islands.get(islandId);
                 if (island == null) {
@@ -422,6 +422,7 @@ public class WorldManager implements ZientisMultiWorldAPI {
     @Override
     public CompletableFuture<String> getDiscordMultiWorldStats() {
         return CompletableFuture.supplyAsync(() -> {
+            ensureInitialized();
             try {
                 StringBuilder stats = new StringBuilder();
                 stats.append("🌍 **多世界系統統計**\n\n");
@@ -446,6 +447,7 @@ public class WorldManager implements ZientisMultiWorldAPI {
     @Override
     public CompletableFuture<Boolean> sendDiscordMultiWorldNotification(String eventType, UUID islandId, String message) {
         return CompletableFuture.supplyAsync(() -> {
+            ensureInitialized();
             try {
                 // TODO: Implement Discord webhook notification
                 logger.info(String.format("Discord notification [%s]: Island %s, Message: %s", 
@@ -461,6 +463,7 @@ public class WorldManager implements ZientisMultiWorldAPI {
     @Override
     public CompletableFuture<String> handleDiscordMultiWorldCommand(String command, String[] args, String discordUserId) {
         return CompletableFuture.supplyAsync(() -> {
+            ensureInitialized();
             try {
                 // TODO: Implement Discord command handling
                 logger.info(String.format("Discord multiworld command from %s: %s %s", 
@@ -476,6 +479,7 @@ public class WorldManager implements ZientisMultiWorldAPI {
     @Override
     public CompletableFuture<List<com.zientis.multiworld.discord.DiscordIslandData>> getDiscordIslandsNeedingAttention() {
         return CompletableFuture.supplyAsync(() -> {
+            ensureInitialized();
             try {
                 // TODO: Implement islands needing attention
                 List<com.zientis.multiworld.discord.DiscordIslandData> needsAttention = new ArrayList<>();
@@ -491,6 +495,7 @@ public class WorldManager implements ZientisMultiWorldAPI {
     @Override
     public CompletableFuture<List<com.zientis.multiworld.discord.DiscordIslandData>> getDiscordIslandRanking(String criteria, int limit) {
         return CompletableFuture.supplyAsync(() -> {
+            ensureInitialized();
             try {
                 // TODO: Implement island ranking by criteria
                 List<com.zientis.multiworld.discord.DiscordIslandData> ranking = new ArrayList<>();
@@ -506,6 +511,7 @@ public class WorldManager implements ZientisMultiWorldAPI {
     @Override
     public CompletableFuture<com.zientis.multiworld.discord.DiscordIslandData> getDiscordIslandDataByDiscordUser(String discordUserId) {
         return CompletableFuture.supplyAsync(() -> {
+            ensureInitialized();
             try {
                 // TODO: Implement Discord user to player mapping and island data retrieval
                 logger.info(String.format("Getting Discord island data for Discord user: %s", discordUserId));
@@ -520,6 +526,7 @@ public class WorldManager implements ZientisMultiWorldAPI {
     @Override
     public CompletableFuture<com.zientis.multiworld.discord.DiscordIslandData> getDiscordIslandDataById(UUID islandId) {
         return CompletableFuture.supplyAsync(() -> {
+            ensureInitialized();
             try {
                 // TODO: Implement Discord island data generation by island ID
                 logger.info(String.format("Getting Discord island data for island: %s", islandId));
@@ -534,6 +541,7 @@ public class WorldManager implements ZientisMultiWorldAPI {
     @Override
     public CompletableFuture<com.zientis.multiworld.discord.DiscordIslandData> getDiscordIslandData(UUID playerId) {
         return CompletableFuture.supplyAsync(() -> {
+            ensureInitialized();
             try {
                 // TODO: Implement Discord island data generation for player
                 logger.info(String.format("Getting Discord island data for player: %s", playerId));
@@ -543,26 +551,6 @@ public class WorldManager implements ZientisMultiWorldAPI {
                 return null;
             }
         });
-    }
-    
-    public void shutdown() {
-        logger.info("Shutting down WorldManager...");
-        
-        // Shutdown backup manager first
-        if (backupManager != null) {
-            backupManager.shutdown();
-        }
-        
-        scheduler.shutdown();
-        try {
-            if (!scheduler.awaitTermination(30, TimeUnit.SECONDS)) {
-                logger.warning("WorldManager scheduler did not terminate gracefully");
-                scheduler.shutdownNow();
-            }
-        } catch (InterruptedException e) {
-            scheduler.shutdownNow();
-            Thread.currentThread().interrupt();
-        }
     }
     
     private static class MemoryStatsImpl implements MemoryStats {

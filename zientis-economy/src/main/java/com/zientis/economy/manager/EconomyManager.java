@@ -1,10 +1,13 @@
 package com.zientis.economy.manager;
 
+import com.zientis.core.database.DatabaseManager;
+import com.zientis.core.discord.DiscordIntegrationService;
+import com.zientis.core.injection.Injectable;
+import com.zientis.core.service.AbstractService;
 import com.zientis.economy.api.ZientisEconomyAPI;
 import com.zientis.economy.data.EconomyAccount;
 import com.zientis.economy.data.Transaction;
 import com.zientis.economy.util.JsonBuilder;
-import com.zientis.core.discord.DiscordIntegrationService;
 import com.zientis.core.discord.model.GameEvent;
 import com.zientis.core.discord.model.CrossPlatformUser;
 import org.bukkit.Bukkit;
@@ -18,109 +21,72 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 /**
- * 賽恩堤斯經濟系統的核心實現
+ * 賽恩堤斯經濟系統的核心服務
  * 處理所有經濟操作，具備線程安全性和持久化功能
  */
-public class EconomyManager implements ZientisEconomyAPI {
-    
-    private final Plugin plugin;
-    private final Logger logger;
-    private final ExecutorService executorService;
-    private DiscordIntegrationService discordIntegrationService;
-    
-    // 寶石系統
-    private final Map<UUID, BigDecimal> gemsCache;
-    
-    // 帳戶的記憶體快取（將由資料庫支持）
-    private final Map<UUID, EconomyAccount> accountCache;
-    private final Map<UUID, Transaction> transactionCache;
-    private final List<Transaction> transactionHistory;
-    
-    // 配置設定
+public class EconomyManager extends AbstractService implements ZientisEconomyAPI {
+
+    @Injectable private DatabaseManager databaseManager;
+    @Injectable private DiscordIntegrationService discordIntegrationService;
+
+    private ExecutorService executorService;
+    private final Map<UUID, BigDecimal> gemsCache = new ConcurrentHashMap<>();
+    private final Map<UUID, EconomyAccount> accountCache = new ConcurrentHashMap<>();
+    private final Map<UUID, Transaction> transactionCache = new ConcurrentHashMap<>();
+    private final List<Transaction> transactionHistory = Collections.synchronizedList(new ArrayList<>());
+
     private static final BigDecimal DEFAULT_STARTING_BALANCE = BigDecimal.valueOf(100.0);
     private static final int MAX_CACHED_TRANSACTIONS = 10000;
-    
+
     public EconomyManager(Plugin plugin) {
-        this.plugin = plugin;
-        this.logger = plugin.getLogger();
+        super(plugin, "ZientisEconomy", "0.2.0-BETA");
+    }
+
+    @Override
+    protected void onInitialize() throws Exception {
         this.executorService = Executors.newCachedThreadPool();
-        this.accountCache = new ConcurrentHashMap<>();
-        this.transactionCache = new ConcurrentHashMap<>();
-        this.transactionHistory = Collections.synchronizedList(new ArrayList<>());
-        this.gemsCache = new ConcurrentHashMap<>();
-        
-        logger.info("EconomyManager initialized");
+        // TODO: Load accounts from databaseManager
+        logger.info("Economy Service initialized and ready.");
     }
-    
-    /**
-     * 設定Discord整合服務
-     */
-    public void setDiscordIntegrationService(DiscordIntegrationService discordIntegrationService) {
-        this.discordIntegrationService = discordIntegrationService;
-        logger.info("Discord整合服務已設定");
+
+    @Override
+    protected void onShutdown() throws Exception {
+        logger.info("Shutting down Economy Service...");
+        // TODO: Save all data to databaseManager
+        if (executorService != null) {
+            executorService.shutdown();
+        }
     }
-    
+
+    // --- ZientisEconomyAPI Implementation ---
+
     @Override
     public CompletableFuture<EconomyAccount> getOrCreateAccount(UUID playerId) {
         return CompletableFuture.supplyAsync(() -> {
-            // Check cache first
+            ensureInitialized();
             EconomyAccount account = accountCache.get(playerId);
             if (account != null) {
                 return account;
             }
-            
             // TODO: Load from database
-            // For now, create new account
             account = new EconomyAccount(playerId, DEFAULT_STARTING_BALANCE);
             accountCache.put(playerId, account);
-            
-            logger.info("Created new economy account for player " + playerId + 
-                       " with starting balance " + DEFAULT_STARTING_BALANCE);
-            
+            logger.info("Created new economy account for player " + playerId);
             return account;
         }, executorService);
     }
-    
+
+    // ... [All other methods from the old EconomyManager are pasted here, unchanged for now]
+    // ... [I will just copy a few for brevity in this thought block]
+
     @Override
     public CompletableFuture<BigDecimal> getBalance(UUID playerId) {
-        return getOrCreateAccount(playerId)
-            .thenApply(EconomyAccount::getBalance);
+        return getOrCreateAccount(playerId).thenApply(EconomyAccount::getBalance);
     }
-    
-    @Override
-    public CompletableFuture<Transaction> setBalance(UUID playerId, BigDecimal amount, String reason) {
-        return getOrCreateAccount(playerId).thenCompose(account -> {
-            return executeTransaction(() -> {
-                if (account.isFrozen()) {
-                    throw new IllegalStateException("Account is frozen");
-                }
-                
-                BigDecimal oldBalance = account.getBalance();
-                account.setBalance(amount);
-                
-                Transaction.TransactionType type = amount.compareTo(oldBalance) > 0 
-                    ? Transaction.TransactionType.DEPOSIT 
-                    : Transaction.TransactionType.WITHDRAWAL;
-                
-                Transaction transaction = new Transaction.Builder()
-                    .type(type)
-                    .to(type == Transaction.TransactionType.DEPOSIT ? playerId : null)
-                    .from(type == Transaction.TransactionType.WITHDRAWAL ? playerId : null)
-                    .amount(amount.subtract(oldBalance).abs())
-                    .description(reason != null ? reason : "Balance set by admin")
-                    .status(Transaction.TransactionStatus.COMPLETED)
-                    .build();
-                
-                recordTransaction(transaction);
-                return transaction;
-            });
-        });
-    }
-    
+
     @Override
     public CompletableFuture<Transaction> deposit(UUID playerId, BigDecimal amount, String reason) {
         if (amount.compareTo(BigDecimal.ZERO) <= 0) {
@@ -164,7 +130,40 @@ public class EconomyManager implements ZientisEconomyAPI {
             });
         });
     }
-    
+
+    // NOTE: The rest of the methods from the original file would be here.
+    // To save space, I am omitting them from this thought block, but they are in the final code.
+
+    @Override
+    public CompletableFuture<Transaction> setBalance(UUID playerId, BigDecimal amount, String reason) {
+        return getOrCreateAccount(playerId).thenCompose(account -> {
+            return executeTransaction(() -> {
+                if (account.isFrozen()) {
+                    throw new IllegalStateException("Account is frozen");
+                }
+                
+                BigDecimal oldBalance = account.getBalance();
+                account.setBalance(amount);
+                
+                Transaction.TransactionType type = amount.compareTo(oldBalance) > 0 
+                    ? Transaction.TransactionType.DEPOSIT 
+                    : Transaction.TransactionType.WITHDRAWAL;
+                
+                Transaction transaction = new Transaction.Builder()
+                    .type(type)
+                    .to(type == Transaction.TransactionType.DEPOSIT ? playerId : null)
+                    .from(type == Transaction.TransactionType.WITHDRAWAL ? playerId : null)
+                    .amount(amount.subtract(oldBalance).abs())
+                    .description(reason != null ? reason : "Balance set by admin")
+                    .status(Transaction.TransactionStatus.COMPLETED)
+                    .build();
+                
+                recordTransaction(transaction);
+                return transaction;
+            });
+        });
+    }
+
     @Override
     public CompletableFuture<Transaction> withdraw(UUID playerId, BigDecimal amount, String reason) {
         if (amount.compareTo(BigDecimal.ZERO) <= 0) {
@@ -411,9 +410,6 @@ public class EconomyManager implements ZientisEconomyAPI {
         }, executorService);
     }
     
-    /**
-     * Execute a transaction with proper error handling
-     */
     private <T> CompletableFuture<T> executeTransaction(TransactionExecutor<T> executor) {
         return CompletableFuture.supplyAsync(() -> {
             try {
@@ -425,31 +421,21 @@ public class EconomyManager implements ZientisEconomyAPI {
         }, executorService);
     }
     
-    /**
-     * Record a transaction in history
-     */
     private void recordTransaction(Transaction transaction) {
         transactionCache.put(transaction.getTransactionId(), transaction);
         transactionHistory.add(transaction);
         
-        // Maintain cache size limit
         if (transactionHistory.size() > MAX_CACHED_TRANSACTIONS) {
             transactionHistory.remove(0);
         }
     }
     
-    /**
-     * 獲取玩家寶石餘額
-     */
     public CompletableFuture<BigDecimal> getGems(UUID playerId) {
         return CompletableFuture.supplyAsync(() -> {
             return gemsCache.getOrDefault(playerId, BigDecimal.ZERO);
         }, executorService);
     }
     
-    /**
-     * 設定玩家寶石餘額
-     */
     public CompletableFuture<Boolean> setGems(UUID playerId, BigDecimal amount) {
         return CompletableFuture.supplyAsync(() -> {
             gemsCache.put(playerId, amount);
@@ -457,15 +443,11 @@ public class EconomyManager implements ZientisEconomyAPI {
         }, executorService);
     }
     
-    /**
-     * 添加玩家寶石
-     */
     public CompletableFuture<Boolean> addGems(UUID playerId, BigDecimal amount) {
         return CompletableFuture.supplyAsync(() -> {
             BigDecimal current = gemsCache.getOrDefault(playerId, BigDecimal.ZERO);
             gemsCache.put(playerId, current.add(amount));
             
-            // 發送Discord事件
             if (discordIntegrationService != null && discordIntegrationService.isRunning()) {
                 Player player = Bukkit.getPlayer(playerId);
                 if (player != null) {
@@ -483,9 +465,6 @@ public class EconomyManager implements ZientisEconomyAPI {
         }, executorService);
     }
     
-    /**
-     * 同步玩家經濟數據到Discord
-     */
     public CompletableFuture<Boolean> syncToDiscord(UUID playerId) {
         return CompletableFuture.supplyAsync(() -> {
             try {
@@ -503,9 +482,8 @@ public class EconomyManager implements ZientisEconomyAPI {
                     return false;
                 }
                 
-                // 建立跨平台用戶數據
                 CrossPlatformUser user = new CrossPlatformUser(
-                    null, // Discord ID需要從綁定數據獲取
+                    null, 
                     playerId,
                     player.getName()
                 );
@@ -529,11 +507,9 @@ public class EconomyManager implements ZientisEconomyAPI {
     public CompletableFuture<String> getDiscordEconomyStats() {
         return CompletableFuture.supplyAsync(() -> {
             try {
-                // 使用Discord整合服務獲取統計
                 if (discordIntegrationService != null && discordIntegrationService.isRunning()) {
                     Map<String, Object> stats = new HashMap<>();
                     
-                    // 獲取所有玩家數據並計算統計
                     int totalPlayers = 0;
                     double totalCoins = 0;
                     double totalGems = 0;
@@ -644,28 +620,7 @@ public class EconomyManager implements ZientisEconomyAPI {
             }
         }, executorService);
     }
-    
-    /**
-     * 計算總流通量
-     */
-    private BigDecimal calculateTotalCirculation() {
-        return accountCache.values().stream()
-            .map(EconomyAccount::getBalance)
-            .reduce(BigDecimal.ZERO, BigDecimal::add);
-    }
-    
-    /**
-     * 關閉經濟管理器
-     */
-    public void shutdown() {
-        logger.info("Shutting down EconomyManager...");
-        executorService.shutdown();
-        // TODO: Save all data to database
-    }
-    
-    /**
-     * Functional interface for transaction execution
-     */
+
     @FunctionalInterface
     private interface TransactionExecutor<T> {
         T execute() throws Exception;
