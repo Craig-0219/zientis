@@ -1,0 +1,77 @@
+#!/bin/bash
+
+# =======================================================
+# Zientis CLI 跨平台啟動器
+# =======================================================
+# 自動檢測系統並選擇適當的 CLI 版本
+# =======================================================
+
+set -e
+
+# 檢測當前腳本所在目錄
+if [ -n "${BASH_SOURCE[0]}" ]; then
+    # Bash
+    SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+elif [ -n "${(%):-%x}" ]; then
+    # Zsh  
+    SCRIPT_DIR="$(cd "$(dirname "${(%):-%x}")" && pwd)"
+else
+    # 通用方法
+    SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+fi
+
+TOOLS_DIR="$SCRIPT_DIR/tools"
+
+# 檢測作業系統
+detect_os() {
+    case "$(uname -s)" in
+        Linux*)     
+            echo "linux"
+            ;;
+        Darwin*)    
+            echo "macos"
+            ;;
+        CYGWIN*|MINGW32*|MSYS*|MINGW64*)
+            echo "windows"
+            ;;
+        *)          
+            echo "unknown"
+            ;;
+    esac
+}
+
+# 主函數
+main() {
+    local os=$(detect_os)
+    
+    case $os in
+        "linux"|"macos")
+            # Unix-like 系統使用 bash 版本
+            if [ -x "$TOOLS_DIR/zientis-cli" ]; then
+                exec "$TOOLS_DIR/zientis-cli" "$@"
+            else
+                echo "錯誤: 找不到 zientis-cli 或沒有執行權限"
+                echo "請確保 $TOOLS_DIR/zientis-cli 存在且可執行"
+                exit 1
+            fi
+            ;;
+        "windows")
+            # Windows 系統使用批次檔案版本
+            if [ -f "$TOOLS_DIR/zientis-cli.bat" ]; then
+                exec cmd.exe /c "$TOOLS_DIR/zientis-cli.bat" "$@"
+            else
+                echo "錯誤: 找不到 zientis-cli.bat"
+                echo "請確保 $TOOLS_DIR/zientis-cli.bat 存在"
+                exit 1
+            fi
+            ;;
+        *)
+            echo "不支援的作業系統: $(uname -s)"
+            echo "支援的系統: Linux, macOS, Windows"
+            exit 1
+            ;;
+    esac
+}
+
+# 執行主函數
+main "$@"
