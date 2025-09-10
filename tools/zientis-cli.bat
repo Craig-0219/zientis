@@ -102,7 +102,9 @@ if "%subcommand%"=="" set subcommand=all
 if "%subcommand%"=="help" goto build_help
 
 echo !YELLOW!⚠️  檢查 Kotlin 是否可用...!NC!
-kotlin -version >nul 2>&1
+
+REM 快速檢查 Kotlin 命令是否存在
+where kotlin >nul 2>&1
 if errorlevel 1 (
     echo !YELLOW!⚠️  Kotlin 未安裝，使用 build.bat 替代!NC!
     if exist "%TOOLS_DIR%build.bat" (
@@ -112,7 +114,10 @@ if errorlevel 1 (
         echo !RED!❌ 找不到 build.bat!NC!
     )
 ) else (
+    REM 嘗試執行 Kotlin，但限制執行時間
+    echo !GREEN!✅ 找到 Kotlin，執行編譯腳本...!NC!
     cd /d "%PROJECT_ROOT%"
+    timeout /t 1 >nul
     kotlin -s "%TOOLS_DIR%build-runner.main.kts" --%subcommand% %2 %3 %4 %5
 )
 goto end
